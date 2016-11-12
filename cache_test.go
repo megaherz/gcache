@@ -122,3 +122,40 @@ func TestCache_Expiration(t *testing.T) {
 	}
 
 }
+
+func TestCache_ParallelGetUpdate(t *testing.T) {
+	cache := NewCache()
+
+	cache.Set("key", 0, time.Second * 10)
+
+	done := make(chan bool)
+
+	var updated int
+
+	// Get
+	go func() {
+		for i:= 0; i < 100; i++ {
+			value, _ := cache.Get("key")
+
+			if (value != updated){
+				t.Error("Failed", value, updated)
+			}
+		}
+
+		done <- true
+	}()
+
+	// Set
+	go func() {
+		for i:= 0; i < 100; i++ {
+			cache.Update("key", i * 100)
+			updated = i * 100
+		}
+
+		done <- true
+	}()
+
+	for i := 0; i < 2; i++ {
+		<-done
+	}
+}

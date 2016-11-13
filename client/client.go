@@ -69,5 +69,25 @@ func (client *Client) Set(key string, value string, ttl int) error {
 
 }
 
+func (client *Client) Update(key string, value string) error {
+	return nil
+}
+
+func (client *Client) UpdateWithTtl(key string, value string, ttl int) error {
+	return nil
+}
+
+
+func (client *Client) Del(key string) error {
+	return nil
+}
+
+
+func (client *Client) Keys(key string) []string {
+	return nil
+}
+
+
+
 
 

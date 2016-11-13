@@ -182,7 +182,7 @@ func TestCache_Eviction(t *testing.T) {
 
 }
 
-func BenchmarkCache_GetSet(b *testing.B) {
+func BenchmarkCache_SetGet(b *testing.B) {
 
 	cache := NewCache()
 

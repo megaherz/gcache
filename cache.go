@@ -48,6 +48,11 @@ func (pq *priorityQueue) Pop() interface{} {
 	return item
 }
 
+func (pq *priorityQueue) Peek() interface{} {
+	a := *pq
+	return a[0]
+}
+
 type Cache struct {
 	items map[string]*item
 	pq    *priorityQueue
@@ -74,13 +79,12 @@ func (c*Cache) evict() {
 
 	for c.pq.Len() != 0 {
 
-		//TODO: peek
+		item := c.pq.Peek().(*item)
 
-		item := heap.Pop(c.pq).(*item)
 		if (item.expireAt.Before(now)) {
+			heap.Pop(c.pq)
 			delete(c.items, item.key)
 		} else {
-			heap.Push(c.pq, item)
 			break
 		}
 	}

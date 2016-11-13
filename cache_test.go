@@ -3,6 +3,7 @@ package gcache
 import (
 	"testing"
 	"time"
+	"strconv"
 )
 
 func TestCache_Keys(t *testing.T) {
@@ -130,16 +131,11 @@ func TestCache_ParallelGetUpdate(t *testing.T) {
 
 	done := make(chan bool)
 
-	var updated int
-
 	// Get
 	go func() {
 		for i:= 0; i < 100; i++ {
 			value, _ := cache.Get("key")
-
-			if (value != updated){
-				t.Error("Failed", value, updated)
-			}
+			t.Log("Value", value)
 		}
 
 		done <- true
@@ -149,7 +145,6 @@ func TestCache_ParallelGetUpdate(t *testing.T) {
 	go func() {
 		for i:= 0; i < 100; i++ {
 			cache.Update("key", i * 100)
-			updated = i * 100
 		}
 
 		done <- true
@@ -188,7 +183,7 @@ func BenchmarkCache_SetGet(b *testing.B) {
 
 	for n := 0; n < b.N; n++ {
 
-		key := "key" + string(n)
+		key := "key" + strconv.Itoa(n)
 
 		cache.Set(key, "val", 1 * time.Second)
 		_, err := cache.Get(key)

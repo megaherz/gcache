@@ -118,7 +118,7 @@ func BenchmarkCache_SetGet(b *testing.B) {
 
 	for n := 0; n < b.N; n++ {
 
-		key := "key" + string(n)
+		key := "key" + strconv.Itoa(n)
 
 		cache.Set(key, "val", 1 * time.Second)
 		_, err := cache.Get(key)
@@ -131,5 +131,6 @@ func BenchmarkCache_SetGet(b *testing.B) {
 ```
 
 Result: <br />
-BenchmarkCache_SetGet-4   1000000   1958 ns/op
+BenchmarkCache_SetGet-4   |   1000000   |     2032 ns/op
+
 

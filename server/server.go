@@ -11,7 +11,10 @@ type Server struct {
 }
 
 func (s *Server) Run(addr string) {
-	http.HandleFunc("/keys", &keysHandler{cache: s.cache}.Handle)
+
+	keysHandler := &keysHandler{cache: s.cache}
+
+	http.HandleFunc("/keys", keysHandler.Handle)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 

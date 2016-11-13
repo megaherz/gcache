@@ -24,7 +24,7 @@ func (handler *keysHandler) Handle(w http.ResponseWriter, req *http.Request) {
 
 	key := req.Form.Get("key")
 
-	if (key == nil) {
+	if (key == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -33,26 +33,28 @@ func (handler *keysHandler) Handle(w http.ResponseWriter, req *http.Request) {
 	case http.MethodPost:
 
 		// Parse value
-		value := req.Form["value"]
+		value := req.Form.Get("value")
 
-		if (value == nil) {
+		if (value == "") {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		// Parse ttl
-		var ttl int
-		if (req.Form["ttl"] == nil) {
-			ttl = noTtlDefined
-		} else {
-			ttl, err := strconv.Atoi(req.Form["ttl"])
-			if err != nil || ttl < 0 {
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
+		strTtl := req.Form.Get("ttl")
+
+		if (strTtl == "") {
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 
-		handler.set(key, value, strconv.Atoi(ttl))
+		ttl, err := strconv.Atoi(strTtl)
+
+		if (err != nil) {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		handler.set(key, value, ttl)
 
 	case http.MethodGet:
 
@@ -60,26 +62,27 @@ func (handler *keysHandler) Handle(w http.ResponseWriter, req *http.Request) {
 
 	case http.MethodPatch:
 
-		value := req.Form["value"]
+		value := req.Form.Get("value")
 
-		if (value == nil) {
+		if (value == "") {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		// Parse ttl
-		var ttl int
-		if (req.Form["ttl"] == nil) {
-			ttl = noTtlDefined
+		if (req.Form.Get("ttl") == "") {
+			handler.update(key, value, noTtlDefined, w)
 		} else {
-			ttl, err := strconv.Atoi(req.Form["ttl"])
+			ttl, err := strconv.Atoi(req.Form.Get("ttl"))
 			if err != nil || ttl < 0 {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
+
+			handler.update(key, value, ttl, w)
 		}
 
-		handler.update(key, value,  strconv.Atoi(ttl), w)
+
 
 	case http.MethodDelete:
 
@@ -90,6 +93,7 @@ func (handler *keysHandler) Handle(w http.ResponseWriter, req *http.Request) {
 }
 
 func (handler *keysHandler) get(key string, w http.ResponseWriter){
+
 	value, err := handler.cache.Get(key)
 
 	if (err == gcache.ErrKeyNotFound) {
@@ -106,9 +110,12 @@ func (handler *keysHandler) get(key string, w http.ResponseWriter){
 }
 
 func (handler *keysHandler) set(key string, value string, ttl int){
-	handler.cache.Set(key, value, ttl * time.Second)
+	handler.cache.Set(key, value, handler.intToDurationInMinutes(ttl))
 }
 
+func (handler *keysHandler) intToDurationInMinutes(ttl int) time.Duration {
+	return time.Duration(float64(int64(ttl) * time.Second.Nanoseconds()))
+}
 func (handler *keysHandler) remove(key string, w http.ResponseWriter, req *http.Request) {
 	err := handler.cache.Del(key)
 
@@ -130,7 +137,7 @@ func (handler *keysHandler) update(key string, value string, ttl int, w http.Res
 	if (ttl != noTtlDefined) {
 		err = handler.cache.Update(key, value)
 	} else {
-		err = handler.cache.UpdateWithTll(key, value, ttl)
+		err = handler.cache.UpdateWithTll(key, value, handler.intToDurationInMinutes(ttl))
 	}
 
 	if (err == gcache.ErrKeyNotFound) {

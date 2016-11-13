@@ -8,6 +8,8 @@ import (
 	"runtime"
 )
 
+const DefaultEvictionInterval time.Duration = 1 * time.Second
+
 var ErrKeyNotFound = errors.New("Key Not Found")
 
 type item struct {
@@ -19,7 +21,9 @@ type item struct {
 
 type priorityQueue []*item
 
-func (pq priorityQueue) Len() int { return len(pq) }
+func (pq priorityQueue) Len() int {
+	return len(pq)
+}
 
 func (pq priorityQueue) Less(i, j int) bool {
 	return pq[i].expireAt.Before(pq[j].expireAt)
@@ -39,18 +43,15 @@ func (pq *priorityQueue) Push(x interface{}) {
 func (pq *priorityQueue) Pop() interface{} {
 	a := *pq
 	n := len(a)
-	item := a[n-1]
-	*pq = a[0 : n-1]
+	item := a[n - 1]
+	*pq = a[0 : n - 1]
 	return item
 }
 
-
-
-
 type Cache struct {
-	items   map[string]*item
-	pq      *priorityQueue
-	mutex   sync.RWMutex
+	items map[string]*item
+	pq    *priorityQueue
+	mutex sync.RWMutex
 }
 
 func (c*Cache) getItem(key string) (*item, bool) {
@@ -228,25 +229,27 @@ func schedule(what func(), delay time.Duration) chan bool {
 }
 
 // Create a new cache
-func NewCache() (*Cache) {
+func NewCache() *Cache {
 
 	pq := priorityQueue{}
 	heap.Init(&pq)
 
-	cache:= &Cache{
+	cache := &Cache{
 		items:make(map[string]*item),
 		pq: &pq,
 	}
 
 	// Schedule eviction execution on interval
 	stop := schedule(func() {
-				cache.mutex.Lock()
-				cache.evict()
-				cache.mutex.Unlock()
-			 }, 1 * time.Second)
+		cache.mutex.Lock()
+		cache.evict()
+		cache.mutex.Unlock()
+	}, DefaultEvictionInterval)
 
 	// Stop scheduling on finalization
-	runtime.SetFinalizer(cache, func(cache *Cache){stop <- true})
+	runtime.SetFinalizer(cache, func(cache *Cache) {
+		stop <- true
+	})
 
 	return cache
 }

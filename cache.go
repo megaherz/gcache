@@ -4,6 +4,8 @@ import (
 	"time"
 	"errors"
 	"sync"
+	"container/heap"
+	"runtime"
 )
 
 var ErrKeyNotFound = errors.New("Key Not Found")
@@ -14,9 +16,41 @@ type item struct {
 	expireAt time.Time
 }
 
+type priorityQueue []*item
+
+func (pq priorityQueue) Len() int { return len(pq) }
+
+func (pq priorityQueue) Less(i, j int) bool {
+	return pq[i].expireAt.Before(pq[j].expireAt)
+}
+
+func (pq priorityQueue) Swap(i, j int) {
+	pq[i], pq[j] = pq[j], pq[i]
+}
+
+func (pq *priorityQueue) Push(x interface{}) {
+	item := x.(*item)
+	q := *pq
+	q = append(q, item)
+	*pq = q
+}
+
+func (pq *priorityQueue) Pop() interface{} {
+	a := *pq
+	n := len(a)
+	item := a[n-1]
+	*pq = a[0 : n-1]
+	return item
+}
+
+
+
+
+
 type Cache struct {
-	items map[string]*item
-	mutex sync.RWMutex
+	items   map[string]*item
+	pq      *priorityQueue
+	mutex   sync.RWMutex
 }
 
 func (c*Cache) getItem(key string) (*item, bool) {
@@ -32,6 +66,7 @@ func (c*Cache) getItem(key string) (*item, bool) {
 	return nil, false
 }
 
+// Evict expired items from the cache
 func (c*Cache) evict() {
 
 	//Not efficient since full scan: rewrite!
@@ -39,8 +74,9 @@ func (c*Cache) evict() {
 	now := time.Now()
 	for key, item := range c.items {
 		if (item.expireAt.Before(now)) {
-			//It's safe. From the spec: If map entries that have not yet been reached are removed during iteration, the corresponding iteration values will not be produced
-			delete(key, item)
+			//It's safe. From the spec: If map entries that have not yet been
+			// reached are removed during iteration, the corresponding iteration values will not be produced
+			delete(c.items, key)
 		}
 	}
 }
@@ -57,6 +93,14 @@ func (c*Cache) Get(key string) (interface{}, error) {
 	c.mutex.RUnlock()
 
 	return nil, ErrKeyNotFound
+}
+
+// Get the number of items in the cache
+func (c *Cache) Count() int {
+	c.mutex.Lock()
+	count := len(c.items)
+	c.mutex.Unlock()
+	return count
 }
 
 // Get the Tll (Time to live) of the key
@@ -122,6 +166,7 @@ func (c*Cache) UpdateWithTll(key string, value interface{}, ttl time.Duration) e
 	return nil
 }
 
+// Delete the value of the key
 func (c*Cache) Del(key string) (err error) {
 
 	c.mutex.Lock()
@@ -136,6 +181,7 @@ func (c*Cache) Del(key string) (err error) {
 	return err
 }
 
+// Return all keys in the cache
 func (c*Cache) Keys() ([]string) {
 
 	c.mutex.Lock()
@@ -150,8 +196,44 @@ func (c*Cache) Keys() ([]string) {
 	return keys
 }
 
+// Schedule execution of the given function within a specified delay
+func schedule(what func(), delay time.Duration) chan bool {
+	stop := make(chan bool)
+
+	go func() {
+		for {
+			what()
+			select {
+			case <-time.After(delay):
+			case <-stop:
+				return
+			}
+		}
+	}()
+
+	return stop
+}
+
+// Create a new cache
 func NewCache() (*Cache) {
-	return &Cache{
+
+	pq := priorityQueue{}
+	heap.Init(&pq)
+
+	cache:= &Cache{
 		items:make(map[string]*item),
+		pq: &pq,
 	}
+
+	// Schedule eviction execution on interval
+	stop := schedule(func() {
+				cache.mutex.Lock()
+				cache.evict()
+				cache.mutex.Unlock()
+			 }, 1 * time.Second)
+
+	// Stop scheduling on finalization
+	runtime.SetFinalizer(cache, func(cache *Cache){stop <- true})
+
+	return cache
 }

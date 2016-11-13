@@ -159,3 +159,42 @@ func TestCache_ParallelGetUpdate(t *testing.T) {
 		<-done
 	}
 }
+
+func TestCache_Eviction(t *testing.T) {
+
+	cache := NewCache()
+
+	for i:= 0; i < 100; i++ {
+		cache.Set("key" + string(i), "val", 1 * time.Second)
+	}
+
+	count := cache.Count()
+
+	t.Log("Count", count)
+
+	time.Sleep(2 * time.Second)
+
+	count = cache.Count()
+
+	if (count != 0) {
+		t.Error("Count should be 0. There are ", count, "items which have not been evicted")
+	}
+
+}
+
+func BenchmarkCache_GetSet(b *testing.B) {
+
+	cache := NewCache()
+
+	for n := 0; n < b.N; n++ {
+
+		key := "key" + string(n)
+
+		cache.Set(key, "val", 1 * time.Second)
+		_, err := cache.Get(key)
+
+		if (err != nil){
+			b.Error("Failed to GET", key)
+		}
+	}
+}

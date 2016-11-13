@@ -35,6 +35,9 @@ Cache with REST protocol in Golang
 	count := cache.Count()
 ```
 
+##Notes
+To run the server execute the server.sh script in the ./run directory
+
 ##Protocol
 
 ### Get key
@@ -42,6 +45,18 @@ Http method: GET <br/>
 Url: /keys?key={key} <br/>
 #### Request
 **key** - key to get - string - required
+#### Response
+| Status Code  |    Meaning     |          Notes       |
+|--------------|----------------|----------------------|
+|      200     |  Ok            | Body contains value  |
+|      400     |  Bad Request   |                      |
+|      404     |  Not Found     |                      |
+|      500     |  Server error  |                      |
+
+```curl
+curl -XGET http://localhost:8080/keys?key={key}
+
+```
 
 ### Set key
 Http method: POST <br/>

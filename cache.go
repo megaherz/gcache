@@ -11,6 +11,7 @@ import (
 var ErrKeyNotFound = errors.New("Key Not Found")
 
 type item struct {
+	key      string
 	value    interface{}
 	ttl      time.Duration
 	expireAt time.Time
@@ -46,7 +47,6 @@ func (pq *priorityQueue) Pop() interface{} {
 
 
 
-
 type Cache struct {
 	items   map[string]*item
 	pq      *priorityQueue
@@ -69,14 +69,18 @@ func (c*Cache) getItem(key string) (*item, bool) {
 // Evict expired items from the cache
 func (c*Cache) evict() {
 
-	//Not efficient since full scan: rewrite!
-
 	now := time.Now()
-	for key, item := range c.items {
+
+	for c.pq.Len() != 0 {
+
+		//TODO: peek
+
+		item := heap.Pop(c.pq).(*item)
 		if (item.expireAt.Before(now)) {
-			//It's safe. From the spec: If map entries that have not yet been
-			// reached are removed during iteration, the corresponding iteration values will not be produced
-			delete(c.items, key)
+			delete(c.items, item.key)
+		} else {
+			heap.Push(c.pq, item)
+			break
 		}
 	}
 }
@@ -98,6 +102,7 @@ func (c*Cache) Get(key string) (interface{}, error) {
 // Get the number of items in the cache
 func (c *Cache) Count() int {
 	c.mutex.Lock()
+	c.evict()
 	count := len(c.items)
 	c.mutex.Unlock()
 	return count
@@ -125,14 +130,21 @@ func (c*Cache) Set(key string, value interface{}, ttl time.Duration) {
 }
 
 func (c*Cache) set(key string, value interface{}, ttl time.Duration) {
+
+	c.evict()
+
 	expireAt := time.Now().Add(ttl)
-	c.items[key] = &item{
+
+	item := &item{
+		key: key,
 		value: value,
 		ttl: ttl,
 		expireAt: expireAt,
 	}
 
-	c.evict()
+	c.items[key] = item
+
+	heap.Push(c.pq, item)
 }
 
 // Update the value of the key
@@ -185,6 +197,7 @@ func (c*Cache) Del(key string) (err error) {
 func (c*Cache) Keys() ([]string) {
 
 	c.mutex.Lock()
+	c.evict()
 	keys := make([]string, len(c.items))
 	i := 0
 	for k := range c.items {

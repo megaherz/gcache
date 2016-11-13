@@ -35,37 +35,37 @@ Cache with REST protocol in Golang
 	count := cache.Count()
 ```
 
-###Protocol
+##Protocol
 
-#### Get key
-Http method: GET
-Url: /keys?key={key}
-##### Request
+### Get key
+Http method: GET <br/>
+Url: /keys?key={key} <br/>
+#### Request
 **key** - key to get - string - required
 
-#### Set key
-Http method: POST
-Url: /keys?key={key}&value={value}&ttl={ttl}
-##### Request
-**key** - key to get - string - required
-**value** - value to set - string - required
-**ttl** - time to live in _seconds_ - int - required
+### Set key
+Http method: POST <br/>
+Url: /keys?key={key}&value={value}&ttl={ttl} <br/>
+#### Request
+**key** - key to get - string - required <br/>
+**value** - value to set - string - required <br/>
+**ttl** - time to live in _seconds_ - int - required <br/>
 
 
-#### Update key
-Http method: PATCH
-Url: /keys?key={key}&value={value}&ttl={ttl}
-##### Request
-**key** - key to get - string - required
-**value** - value to set - string - required
-**ttl** - time to live in _seconds_ - int - optional
+### Update key
+Http method: PATCH <br/>
+Url: /keys?key={key}&value={value}&ttl={ttl} <br/>
+#### Request
+**key** - key to get - string - required <br/>
+**value** - value to set - string - required <br/>
+**ttl** - time to live in _seconds_ - int - optional <br/>
 
-#### Delete key
-Http method: DELETE
-Url: /keys?key={key}
-##### Request
-**key** - key to get - string - required
+### Delete key
+Http method: DELETE <br/>
+Url: /keys?key={key} <br/>
+#### Request
+**key** - key to get - string - required <br/>
 
-#### List of keys
-Http method: GET
-Url: /keys
+### List of keys
+Http method: GET <br/>
+Url: /keys <br/>

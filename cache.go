@@ -255,6 +255,7 @@ func (c*Cache) listPop(listKey string, pop func(l *list.List) interface{}) (inte
 	if item, ok := c.getItem(listKey); ok {
 		l, ok := item.value.(*list.List)
 		if (!ok){
+			c.mutex.RUnlock()
 			return nil, fmt.Errorf("Given %s is not a list key", listKey)
 		}
 
@@ -353,6 +354,33 @@ func (c*Cache) HSet(hashKey string, key string, value interface{}) error {
 }
 
 func (c*Cache) HGet(hashKey string, key string) (interface{}, error) {
+
+	c.mutex.RLock()
+
+	if item, ok := c.getItem(hashKey); ok {
+		hash, ok := item.value.(map[string]interface{})
+		if (!ok){
+			c.mutex.RUnlock()
+			return nil, fmt.Errorf("Given '%s' is not a hash key", hashKey)
+		}
+
+		value, ok := hash[key]
+		if (!ok) {
+			c.mutex.RUnlock()
+			return nil, fmt.Errorf("Hash '%s' does not contain '%s' key", hashKey, key)
+		}
+
+		c.mutex.RUnlock()
+
+		return value, nil
+
+	} else {
+		c.mutex.RUnlock()
+		return nil, ErrKeyNotFound
+	}
+
+	c.mutex.RUnlock()
+
 	return nil, nil
 }
 

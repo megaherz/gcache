@@ -225,6 +225,31 @@ func TestCache_RPush_RPop(t *testing.T) {
 	}
 }
 
+func TestCache_HSet_HGet(t *testing.T) {
+
+	const listKey  = "list"
+	const key  = "list"
+	const value  = "value"
+
+	cache := NewCache()
+
+	err := cache.HSet(listKey, key, value)
+
+	if (err != nil) {
+		t.Fatal("Failed to push value into the hash")
+	}
+
+	returnedValue, err := cache.HGet(listKey, key)
+
+	if (err != nil) {
+		t.Fatal("Failed to get value from the hash")
+	}
+
+	if returnedValue != value {
+		t.Errorf("Retuned value '%s' does not equal to '%s", returnedValue, value)
+	}
+}
+
 func BenchmarkCache_SetGet(b *testing.B) {
 
 	cache := NewCache()

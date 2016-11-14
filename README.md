@@ -51,7 +51,7 @@ Url: /keys?key={key} <br/>
 |--------------|----------------|----------------------|
 |      200     |  Ok            | Body contains value  |
 |      400     |  Bad Request   |                      |
-|      404     |  Not Found     |          s            |
+|      404     |  Not Found     |                      |
 |      500     |  Server error  |                      |
 
 

@@ -145,7 +145,9 @@ Http method: POST <br/>
 Url: /lists/range?list={list}&from={from}&to={to} <br/>
 
 Out of range indexes will not produce an error. If start is larger than the end of the list, an empty list is returned. 
-If stop is larger than the actual end of the list, Redis will treat it like the last element of the list.
+If stop is larger than the actual end of the list, Redis will treat it like the last element of the list. <br/>
+
+Note that if you have a list of numbers from 0 to 100, LRANGE list 0 10 will return 11 elements, that is, the rightmost item is included. 
 
 #### Request
 **list** - list name - string - required <br/>

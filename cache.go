@@ -217,8 +217,9 @@ func (c*Cache) Keys() ([]string) {
 	return keys
 }
 
-// ----- List -------
+// ====== LIST ======
 
+// Left push value into the list
 func (c*Cache) LPush(listKey string, value interface{}) error {
 
 	return c.listPush(listKey, value, func(l *list.List)  {
@@ -270,6 +271,7 @@ func (c*Cache) listPop(listKey string, pop func(l *list.List) interface{}) (inte
 	}
 }
 
+// Right push value into the list
 func (c*Cache) RPush(listKey string, value interface{}) error {
 
 	return c.listPush(listKey, value, func(l *list.List)  {
@@ -277,6 +279,7 @@ func (c*Cache) RPush(listKey string, value interface{}) error {
 	})
 }
 
+// Left pop value from the list
 func (c*Cache) LPop(listKey string) (interface{}, error) {
 
 	return c.listPop(listKey, func(l *list.List) interface{} {
@@ -286,6 +289,7 @@ func (c*Cache) LPop(listKey string) (interface{}, error) {
 	})
 }
 
+// Right pop vaues from the list
 func (c*Cache) RPop(listKey string)  (interface{}, error)  {
 
 	return c.listPop(listKey, func(l *list.List) interface{} {
@@ -295,6 +299,7 @@ func (c*Cache) RPop(listKey string)  (interface{}, error)  {
 	})
 }
 
+// Returns a range of values from the list
 func (c*Cache) LRange(listKey string, from int, to int)  ([]interface{}, error)  {
 
 	c.mutex.RLock()
@@ -312,7 +317,7 @@ func (c*Cache) LRange(listKey string, from int, to int)  ([]interface{}, error) 
 		//TODO: validate from and to
 
 		for e := l.Front(); e != nil; e = e.Next() {
-			if (index >= from && index < to) {
+			if (index >= from && index <= to) {
 				result = append(result, e.Value)
 			}
 
@@ -329,7 +334,7 @@ func (c*Cache) LRange(listKey string, from int, to int)  ([]interface{}, error) 
 
 }
 
-// ----- Hash -------
+// ====== HASH ======
 
 func (c*Cache) HSet(hashKey string, key string, value interface{}) error {
 	c.mutex.Lock()

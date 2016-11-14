@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 	"strconv"
+	"log"
 )
 
 func TestCache_Keys(t *testing.T) {
@@ -223,6 +224,24 @@ func TestCache_RPush_RPop(t *testing.T) {
 	if returnedValue != value {
 		t.Errorf("Retuned value '%s' does not equal to '%s", returnedValue, value)
 	}
+}
+
+func TestCache_LRange(t *testing.T) {
+	cache := NewCache()
+
+	const listKey  = "list"
+
+	for i:= 0; i < 100; i++ {
+		cache.LPush(listKey, i)
+	}
+
+	values, err := cache.LRange(listKey, 50, 70)
+
+	if (err != nil) {
+		t.Fatal("Failed to get a range of values from the list")
+	}
+
+	log.Println(values)
 }
 
 func TestCache_HSet_HGet(t *testing.T) {

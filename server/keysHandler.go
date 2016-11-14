@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 	"strconv"
+	"strings"
 )
 
 type keysHandler struct {
@@ -22,6 +23,12 @@ func (handler *keysHandler) Handle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Keys
+	if (len(req.Form) == 0 && req.Method == http.MethodGet) {
+		handler.keys(w)
+		return;
+	}
+
 	key := req.Form.Get("key")
 
 	if (key == "") {
@@ -30,9 +37,15 @@ func (handler *keysHandler) Handle(w http.ResponseWriter, req *http.Request) {
 	}
 
 	switch req.Method {
+
+	// Get
+	case http.MethodGet:
+		handler.get(key, w)
+		return
+
+	// Set
 	case http.MethodPost:
 
-		// Parse value
 		value := req.Form.Get("value")
 
 		if (value == "") {
@@ -55,11 +68,9 @@ func (handler *keysHandler) Handle(w http.ResponseWriter, req *http.Request) {
 		}
 
 		handler.set(key, value, ttl)
+		return
 
-	case http.MethodGet:
-
-		handler.get(key, w)
-
+	// Update
 	case http.MethodPatch:
 
 		value := req.Form.Get("value")
@@ -82,14 +93,23 @@ func (handler *keysHandler) Handle(w http.ResponseWriter, req *http.Request) {
 			handler.update(key, value, ttl, w)
 		}
 
+		return
 
 
+	// Delete
 	case http.MethodDelete:
-
 		handler.remove(key, w, req)
+		return
 	}
 
+	// Nothing matched, return bad request
+	w.WriteHeader(http.StatusBadRequest)
+}
 
+func (handler *keysHandler) keys(w http.ResponseWriter) {
+	keys := handler.cache.Keys()
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprint(w, strings.Join(keys, "\n"))
 }
 
 func (handler *keysHandler) get(key string, w http.ResponseWriter){
@@ -106,7 +126,8 @@ func (handler *keysHandler) get(key string, w http.ResponseWriter){
 		return
 	}
 
-	fmt.Fprintf(w, value.(string))
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprint(w, value.(string))
 }
 
 func (handler *keysHandler) set(key string, value string, ttl int){

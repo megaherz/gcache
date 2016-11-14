@@ -5,10 +5,13 @@ import (
 	"errors"
 	"sync"
 	"container/heap"
+	"container/list"
 	"runtime"
+	"fmt"
 )
 
 const DefaultEvictionInterval time.Duration = 1 * time.Second
+const MaxDuration time.Duration = 1<<63 - 1
 
 var ErrKeyNotFound = errors.New("Key Not Found")
 
@@ -212,6 +215,143 @@ func (c*Cache) Keys() ([]string) {
 
 	c.mutex.Unlock()
 	return keys
+}
+
+// ----- List -------
+
+func (c*Cache) LPush(listKey string, value interface{}) error {
+
+	return c.listPush(listKey, value, func(l *list.List)  {
+		l.PushBack(value)
+	})
+}
+
+func (c*Cache) listPush(listKey string, value interface{}, push func(l *list.List)) error {
+	c.mutex.Lock()
+
+	if item, ok := c.getItem(listKey); ok {
+		l, ok := item.value.(*list.List)
+		if (!ok){
+			c.mutex.Unlock()
+			return fmt.Errorf("Given %s is not a list key", listKey)
+		}
+		push(l)
+	} else {
+		//Create new list
+		l := list.New()
+		l = l.Init()
+		c.set(listKey, l, MaxDuration)
+	}
+
+	c.mutex.Unlock()
+
+	return nil
+}
+
+func (c*Cache) listPop(listKey string, pop func(l *list.List) interface{}) (interface{}, error) {
+	c.mutex.RLock()
+
+	if item, ok := c.getItem(listKey); ok {
+		l, ok := item.value.(*list.List)
+		if (!ok){
+			return nil, fmt.Errorf("Given %s is not a list key", listKey)
+		}
+
+		element := pop(l)
+		c.mutex.RUnlock()
+
+		return element, nil
+
+	} else {
+		c.mutex.RUnlock()
+		return nil, ErrKeyNotFound
+	}
+}
+
+func (c*Cache) RPush(listKey string, value interface{}) error {
+
+	return c.listPush(listKey, value, func(l *list.List)  {
+		l.PushFront(value)
+	})
+}
+
+func (c*Cache) LPop(listKey string) (interface{}, error) {
+
+	return c.listPop(listKey, func(l *list.List) interface{} {
+		elem := l.Back()
+		l.Remove(elem)
+		return elem.Value
+	})
+}
+
+func (c*Cache) RPop(listKey string, value interface{})  (interface{}, error)  {
+
+	return c.listPop(listKey, func(l *list.List) interface{} {
+		elem := l.Front()
+		l.Remove(elem)
+		return elem.Value
+	})
+}
+
+func (c*Cache) LRange(listKey string, from int, to int)  ([]interface{}, error)  {
+
+	c.mutex.RLock()
+
+	if item, ok := c.getItem(listKey); ok {
+		l, ok := item.value.(*list.List)
+		if (!ok){
+			c.mutex.RUnlock()
+			return nil, fmt.Errorf("Given %s is not a list key", listKey)
+		}
+
+		index := 0
+		result := make([]interface{}, 0)
+
+		//TODO: validate from and to
+
+		for e := l.Front(); e != nil; e = e.Next() {
+			if (index >= from && index < to) {
+				result = append(result, e.Value)
+			}
+
+			index ++
+		}
+
+		c.mutex.RUnlock()
+		return result, nil
+
+	} else {
+		c.mutex.RUnlock()
+		return nil, ErrKeyNotFound
+	}
+
+}
+
+// ----- Hash -------
+
+func (c*Cache) HSet(hashKey string, key string, value interface{}) error {
+	c.mutex.Lock()
+
+	if item, ok := c.getItem(hashKey); ok {
+		hash, ok := item.value.(map[string]interface{})
+		if (!ok){
+			c.mutex.Unlock()
+			return fmt.Errorf("Given %s is not a hash key", hashKey)
+		}
+		hash[key] = value
+	} else {
+		//Create new list
+		hash := make(map[string]interface{})
+		c.set(hashKey, hash, MaxDuration)
+	}
+
+	c.mutex.Unlock()
+
+	return nil
+}
+
+func (c*Cache) HGet(hashKey string, key string) (interface{}, error) {
+	return nil, nil
 }
 
 // Schedule execution of the given function within a specified delay

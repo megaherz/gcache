@@ -1,5 +1,5 @@
-# gcache
-Cache with REST protocol in Golang
+# Gcache
+Rest-similar Cache with REST protocol in Golang
 
 ##Features
 * Expiration support (Ttl - time to live)

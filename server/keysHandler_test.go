@@ -111,7 +111,7 @@ func TestKeysHandler_Keys(t *testing.T) {
 		t.Fatal(err)
 	}
 	if "" != string(actual) {
-		t.Errorf("Expected no keys")
+		t.Error("Expected no keys")
 	}
 
 	// Insert some keys
@@ -139,5 +139,44 @@ func TestKeysHandler_Keys(t *testing.T) {
 	}
 
 	log.Println("Actual", string(actual))
+}
+
+func TestKeysHandler_SetDel(t *testing.T) {
+	const key = "key1"
+	const value  = "value"
+
+	keysHandler := keysHandler{
+		cache: gcache.NewCache(),
+	}
+
+	ts := httptest.NewServer(http.HandlerFunc(keysHandler.Handle))
+	defer ts.Close()
+
+	url := ts.URL + "?key=" + key + "&ttl=5&value=" + value
+	rr, err := http.Post(url, "", nil)
+
+	if (err != nil){
+		t.Fatalf("http.Post(%q) unexpected error: %v", url, err)
+	}
+
+	// Check the status code is what we expect.
+	if status := rr.StatusCode; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	url = ts.URL + "?key=" + key
+	req, _ := http.NewRequest(http.MethodDelete, url, nil)
+	rr, err = http.DefaultClient.Do(req)
+
+	if (err != nil){
+		t.Fatalf("http.Post(%q) unexpected error: %v", url, err)
+	}
+
+	// Check the status code is what we expect.
+	if status := rr.StatusCode; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
 
 }

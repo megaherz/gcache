@@ -159,7 +159,7 @@ func unexpectedStatusError(status int) error {
 	return fmt.Errorf("Unexpected status %d", status)
 }
 
-func (client *Client) Keys(key string) ([]string, error) {
+func (client *Client) Keys() ([]string, error) {
 
 	url := client.addr + "/keys"
 

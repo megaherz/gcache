@@ -184,7 +184,7 @@ func (client *Client) Keys() ([]string, error) {
 		return nil, err
 	}
 
-	return strings.Split(string(content), "\n"), nil
+	return strings.Split(string(content), " "), nil
 }
 
 

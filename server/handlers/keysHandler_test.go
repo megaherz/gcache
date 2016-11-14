@@ -1,4 +1,4 @@
-package server
+package handlers
 
 import (
 	"testing"
@@ -15,8 +15,8 @@ func TestKeysHandler_SetGet(t *testing.T) {
 	const key = "key1"
 	const value  = "value"
 
-	keysHandler := keysHandler{
-		cache: gcache.NewCache(),
+	keysHandler := KeysHandler{
+		Cache: gcache.NewCache(),
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(keysHandler.Handle))
@@ -85,8 +85,8 @@ func TestKeysHandler_SetGet(t *testing.T) {
 }
 
 func TestKeysHandler_Keys(t *testing.T) {
-	keysHandler := keysHandler{
-		cache: gcache.NewCache(),
+	keysHandler := KeysHandler{
+		Cache: gcache.NewCache(),
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(keysHandler.Handle))
@@ -145,8 +145,8 @@ func TestKeysHandler_SetDel(t *testing.T) {
 	const key = "key1"
 	const value  = "value"
 
-	keysHandler := keysHandler{
-		cache: gcache.NewCache(),
+	keysHandler := KeysHandler{
+		Cache: gcache.NewCache(),
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(keysHandler.Handle))

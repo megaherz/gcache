@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"log"
 	"gcache"
+	"gcache/server/handlers"
 )
 
 type Server struct {
@@ -12,7 +13,7 @@ type Server struct {
 
 func (s *Server) Run(addr string) {
 
-	keysHandler := &keysHandler{cache: s.cache}
+	keysHandler := new(handlers.KeysHandler).Init(s.cache)
 
 	http.HandleFunc("/keys", keysHandler.Handle)
 	log.Fatal(http.ListenAndServe(addr, nil))

@@ -1,4 +1,4 @@
-package server
+package handlers
 
 import (
 	"net/http"
@@ -10,13 +10,19 @@ import (
 	"strings"
 )
 
-type keysHandler struct {
-   cache *gcache.Cache
+type KeysHandler struct {
+   Cache *gcache.Cache
 }
 
 const noTtlDefined int = -1
 
-func (handler *keysHandler) Handle(w http.ResponseWriter, req *http.Request) {
+func (handler *KeysHandler) Init(cache * gcache.Cache) Handler {
+	return &KeysHandler{
+		Cache: cache,
+	}
+}
+
+func (handler *KeysHandler) Handle(w http.ResponseWriter, req *http.Request) {
 
 	if err := req.ParseForm(); err != nil {
 		log.Printf("Error parsing form: %s", err)
@@ -106,15 +112,15 @@ func (handler *keysHandler) Handle(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusBadRequest)
 }
 
-func (handler *keysHandler) keys(w http.ResponseWriter) {
-	keys := handler.cache.Keys()
+func (handler *KeysHandler) keys(w http.ResponseWriter) {
+	keys := handler.Cache.Keys()
 	w.Header().Set("Content-Type", "text/plain")
-	fmt.Fprint(w, strings.Join(keys, "\n"))
+	fmt.Fprint(w, strings.Join(keys, " "))
 }
 
-func (handler *keysHandler) get(key string, w http.ResponseWriter){
+func (handler *KeysHandler) get(key string, w http.ResponseWriter){
 
-	value, err := handler.cache.Get(key)
+	value, err := handler.Cache.Get(key)
 
 	if (err == gcache.ErrKeyNotFound) {
 		w.WriteHeader(http.StatusNotFound)
@@ -130,15 +136,15 @@ func (handler *keysHandler) get(key string, w http.ResponseWriter){
 	fmt.Fprint(w, value.(string))
 }
 
-func (handler *keysHandler) set(key string, value string, ttl int){
-	handler.cache.Set(key, value, handler.intToDurationInMinutes(ttl))
+func (handler *KeysHandler) set(key string, value string, ttl int){
+	handler.Cache.Set(key, value, handler.intToDurationInMinutes(ttl))
 }
 
-func (handler *keysHandler) intToDurationInMinutes(ttl int) time.Duration {
+func (handler *KeysHandler) intToDurationInMinutes(ttl int) time.Duration {
 	return time.Duration(float64(int64(ttl) * time.Second.Nanoseconds()))
 }
-func (handler *keysHandler) remove(key string, w http.ResponseWriter, req *http.Request) {
-	err := handler.cache.Del(key)
+func (handler *KeysHandler) remove(key string, w http.ResponseWriter, req *http.Request) {
+	err := handler.Cache.Del(key)
 
 	if (err == gcache.ErrKeyNotFound) {
 		http.NotFound(w, req)
@@ -151,14 +157,14 @@ func (handler *keysHandler) remove(key string, w http.ResponseWriter, req *http.
 	}
 }
 
-func (handler *keysHandler) update(key string, value string, ttl int, w http.ResponseWriter) {
+func (handler *KeysHandler) update(key string, value string, ttl int, w http.ResponseWriter) {
 
 	var err error
 
 	if (ttl != noTtlDefined) {
-		err = handler.cache.Update(key, value)
+		err = handler.Cache.Update(key, value)
 	} else {
-		err = handler.cache.UpdateWithTll(key, value, handler.intToDurationInMinutes(ttl))
+		err = handler.Cache.UpdateWithTll(key, value, handler.intToDurationInMinutes(ttl))
 	}
 
 	if (err == gcache.ErrKeyNotFound) {

@@ -36,7 +36,8 @@ Cache with REST protocol in Golang
 ```
 
 ##Notes
-To run the server execute the server.sh script in the ./run directory
+* To run the server execute the server.sh script in the ./run directory
+* Keys, List and Hashed share the same keys space. Therefore it's forbidden to create the same key for e.g. Keys and Lists 
 
 ##Protocol
 
@@ -110,6 +111,18 @@ Url: /keys <br/>
 |      500     |  Server error  |                               |
 
 
+### Left Push data to list (LPUSH)
+### Right Push data to list (RPUSH)
+### Left Pop data from list (LPOP)
+### Right Pop data from list (RPOP)
+### Range data from list (LRANGE)
+Out of range indexes will not produce an error. If start is larger than the end of the list, an empty list is returned. 
+If stop is larger than the actual end of the list, Redis will treat it like the last element of the list.
+
+### Set field of hash (HSET)
+### Get filed of hash (HGET)
+
+
 ##Performance
 ```go
 func BenchmarkCache_SetGet(b *testing.B) {
@@ -132,5 +145,10 @@ func BenchmarkCache_SetGet(b *testing.B) {
 
 Result: <br />
 BenchmarkCache_SetGet-4   |   1000000   |     2032 ns/op
+
+##TODO
+* Validation that a key does not contain whitespaces
+* Multiple set and get support on hashes
+
 
 

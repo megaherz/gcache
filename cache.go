@@ -240,6 +240,7 @@ func (c*Cache) listPush(listKey string, value interface{}, push func(l *list.Lis
 		//Create new list
 		l := list.New()
 		l = l.Init()
+		l.PushFront(value)
 		c.set(listKey, l, MaxDuration)
 	}
 
@@ -284,7 +285,7 @@ func (c*Cache) LPop(listKey string) (interface{}, error) {
 	})
 }
 
-func (c*Cache) RPop(listKey string, value interface{})  (interface{}, error)  {
+func (c*Cache) RPop(listKey string)  (interface{}, error)  {
 
 	return c.listPop(listKey, func(l *list.List) interface{} {
 		elem := l.Front()
@@ -340,8 +341,9 @@ func (c*Cache) HSet(hashKey string, key string, value interface{}) error {
 		}
 		hash[key] = value
 	} else {
-		//Create new list
+		//Create new hash
 		hash := make(map[string]interface{})
+		hash[key] = value
 		c.set(hashKey, hash, MaxDuration)
 	}
 

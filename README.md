@@ -112,15 +112,53 @@ Url: /keys <br/>
 
 
 ### Left Push data to list (LPUSH)
+Http method: POST <br/>
+Url: /lists/lpush?list={list}&value={value} <br/>
+#### Request
+**list** - list name - string - required <br/>
+**value** - value to push into the list - string - required <br/>
+
 ### Right Push data to list (RPUSH)
+Http method: POST <br/>
+Url: /lists/rpush?list={list}&value={value} <br/>
+#### Request
+**list** - list name - string - required <br/>
+**value** - value to push into the list - string - required <br/>
+
 ### Left Pop data from list (LPOP)
+Http method: POST <br/>
+Url: /lists/lpop?list={list} <br/>
+Pop removes element from the list therefore Http POST is used
+#### Request
+**list** - list name - string - required <br/>
+
+
 ### Right Pop data from list (RPOP)
+Http method: POST <br/>
+Url: /lists/rpop?list={list} <br/>
+Pop removes element from the list therefore Http POST is used
+#### Request
+**list** - list name - string - required <br/>
+
 ### Range data from list (LRANGE)
+Http method: POST <br/>
+Url: /lists/range?list={list}&from={from}&to={to} <br/>
+
 Out of range indexes will not produce an error. If start is larger than the end of the list, an empty list is returned. 
 If stop is larger than the actual end of the list, Redis will treat it like the last element of the list.
 
+#### Request
+**list** - list name - string - required <br/>
+**from** - from index in range - int - required <br/>
+**to** - to index in range - int - required <br/>
+
+### Get field of hash (HGET)
+Http method: GET <br/>
+Url: /hashes/key={key}<br/>
+
 ### Set field of hash (HSET)
-### Get filed of hash (HGET)
+Http method: POST <br/>
+Url: /hashes/key={key}&value={value} <br/>
 
 
 ##Performance

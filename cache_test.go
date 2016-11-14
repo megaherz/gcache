@@ -177,6 +177,54 @@ func TestCache_Eviction(t *testing.T) {
 
 }
 
+func TestCache_LPush_LPop(t *testing.T) {
+
+	const listKey  = "list"
+	const value  = "value"
+
+	cache := NewCache()
+
+	err := cache.LPush(listKey, value)
+
+	if (err != nil) {
+		t.Fatal("Failed to push value into the list")
+	}
+
+	returnedValue, err := cache.LPop(listKey)
+
+	if (err != nil) {
+		t.Fatal("Failed to pop value from the list")
+	}
+
+	if returnedValue != value {
+		t.Errorf("Retuned value '%s' does not equal to '%s", returnedValue, value)
+	}
+}
+
+func TestCache_RPush_RPop(t *testing.T) {
+
+	const listKey  = "list"
+	const value  = "value"
+
+	cache := NewCache()
+
+	err := cache.RPush(listKey, value)
+
+	if (err != nil) {
+		t.Fatal("Failed to push value into the list")
+	}
+
+	returnedValue, err := cache.RPop(listKey)
+
+	if (err != nil) {
+		t.Fatal("Failed to pop value from the list")
+	}
+
+	if returnedValue != value {
+		t.Errorf("Retuned value '%s' does not equal to '%s", returnedValue, value)
+	}
+}
+
 func BenchmarkCache_SetGet(b *testing.B) {
 
 	cache := NewCache()

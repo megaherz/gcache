@@ -7,6 +7,12 @@ import (
 	"fmt"
 )
 
+const (
+	formHashKey = "hashKey"
+	formKey = "key"
+	formValue = "value"
+)
+
 type HashesHandler struct {
 	Cache *gcache.Cache
 }
@@ -39,21 +45,21 @@ func (handler *HashesHandler) Handle(w http.ResponseWriter, req *http.Request) {
 }
 
 func (handler *HashesHandler) hSetCommand(w http.ResponseWriter, req *http.Request) {
-	key := req.Form.Get("key")
+	key := req.Form.Get(formKey)
 
 	if (key == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	hashKey := req.Form.Get("hashKey")
+	hashKey := req.Form.Get(formHashKey)
 
 	if (hashKey == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	value := req.Form.Get("value")
+	value := req.Form.Get(formValue)
 
 	if (value == "") {
 		w.WriteHeader(http.StatusBadRequest)
@@ -66,14 +72,14 @@ func (handler *HashesHandler) hSetCommand(w http.ResponseWriter, req *http.Reque
 
 
 func (handler *HashesHandler) hGetQuery(w http.ResponseWriter, req *http.Request) {
-	key := req.Form.Get("key")
+	key := req.Form.Get(formKey)
 
 	if (key == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	hashKey := req.Form.Get("hashKey")
+	hashKey := req.Form.Get(formHashKey)
 
 	if (hashKey == "") {
 		w.WriteHeader(http.StatusBadRequest)

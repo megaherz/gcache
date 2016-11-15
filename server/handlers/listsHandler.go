@@ -9,6 +9,10 @@ import (
 	"fmt"
 )
 
+const (
+	formListKey = "listKey"
+)
+
 type ListsHandler struct {
 	Cache *gcache.Cache
 }
@@ -37,6 +41,7 @@ func (handler *ListsHandler) Handle(w http.ResponseWriter, req *http.Request) {
 		}
 
 	case http.MethodPost:
+
 		if (strings.Contains(path, "lpush")) {
 			handler.lPushCommand(w, req)
 			return
@@ -93,14 +98,15 @@ func (handler *ListsHandler)  rangeQuery(w http.ResponseWriter, req *http.Reques
 	fmt.Fprint(w, items)
 }
 
-func (handler *ListsHandler)  lPushCommand(w http.ResponseWriter, req *http.Request) {
-	listKey := req.Form.Get("listKey")
+func (handler *ListsHandler) lPushCommand(w http.ResponseWriter, req *http.Request) {
+
+	listKey := req.Form.Get(formListKey)
 	if (listKey == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	value := req.Form.Get("value")
+	value := req.Form.Get(formValue)
 	if (value == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -122,13 +128,14 @@ func (handler *ListsHandler)  lPushCommand(w http.ResponseWriter, req *http.Requ
 }
 
 func (handler *ListsHandler) rPushCommand(w http.ResponseWriter, req *http.Request) {
-	listKey := req.Form.Get("listKey")
+
+	listKey := req.Form.Get(formListKey)
 	if (listKey == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	value := req.Form.Get("value")
+	value := req.Form.Get(formValue)
 	if (value == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -150,7 +157,8 @@ func (handler *ListsHandler) rPushCommand(w http.ResponseWriter, req *http.Reque
 }
 
 func (handler *ListsHandler)  lPopCommand(w http.ResponseWriter, req *http.Request) {
-	listKey := req.Form.Get("listKey")
+
+	listKey := req.Form.Get(formListKey)
 	if (listKey == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -174,7 +182,8 @@ func (handler *ListsHandler)  lPopCommand(w http.ResponseWriter, req *http.Reque
 }
 
 func (handler *ListsHandler)  rPopCommand(w http.ResponseWriter, req *http.Request) {
-	listKey := req.Form.Get("listKey")
+
+	listKey := req.Form.Get(formListKey)
 	if (listKey == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return

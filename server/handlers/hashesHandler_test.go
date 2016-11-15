@@ -10,17 +10,16 @@ import (
 
 func TestHashesHandler_HSetGSet(t *testing.T) {
 
-	const haskKey  = "hashKey"
+	const hashKey  = "hashKey"
 	const key  = "key"
 	const value  = "value"
 
-	handler := HashesHandler{}
-	handler.Init(gcache.NewCache())
+	handler := new(HashesHandler).Init(gcache.NewCache())
 
 	ts := httptest.NewServer(http.HandlerFunc(handler.Handle))
 	defer ts.Close()
 
-	url := ts.URL + "?hashKey=" + haskKey + "&key=" + key + "&value=" + value
+	url := ts.URL + "?hashKey=" + hashKey + "&key=" + key + "&value=" + value
 
 	rr, err := http.Post(url, "", nil)
 
@@ -34,7 +33,7 @@ func TestHashesHandler_HSetGSet(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	url = ts.URL + "?hashKey=" + haskKey + "&key=" + key
+	url = ts.URL + "?hashKey=" + hashKey + "&key=" + key
 
 	rr, err = http.Get(url)
 

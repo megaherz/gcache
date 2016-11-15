@@ -11,8 +11,6 @@ import (
 )
 
 const  (
-	formKey = "key"
-	formValue = "value"
 	formTtl = "ttl"
 )
 
@@ -128,12 +126,9 @@ func (handler *KeysHandler) setKeyCommand(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	handler.Cache.Set(key, value, intToDurationInMinutes(ttl))
+	handler.Cache.Set(key, value, convertIntToDurationInMinutes(ttl))
 }
 
-func intToDurationInMinutes(ttl int) time.Duration {
-	return time.Duration(float64(int64(ttl) * time.Second.Nanoseconds()))
-}
 func (handler *KeysHandler) removeCommand(w http.ResponseWriter, req *http.Request) {
 
 	key := req.Form.Get(formKey)
@@ -184,7 +179,7 @@ func (handler *KeysHandler) updateCommand(w http.ResponseWriter, req *http.Reque
 			return
 		}
 
-		err = handler.Cache.UpdateWithTll(key, value, intToDurationInMinutes(ttl))
+		err = handler.Cache.UpdateWithTll(key, value, convertIntToDurationInMinutes(ttl))
 	}
 
 	if (err == gcache.ErrKeyNotFound) {
@@ -196,4 +191,9 @@ func (handler *KeysHandler) updateCommand(w http.ResponseWriter, req *http.Reque
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+// Convert int to duration in minutes
+func convertIntToDurationInMinutes(ttl int) time.Duration {
+	return time.Duration(float64(int64(ttl) * time.Second.Nanoseconds()))
 }

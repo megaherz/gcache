@@ -10,11 +10,15 @@ import (
 	"strings"
 )
 
+const  (
+	formKey = "key"
+	formValue = "value"
+	formTtl = "ttl"
+)
+
 type KeysHandler struct {
    Cache *gcache.Cache
 }
-
-const noTtlDefined int = -1
 
 func (handler *KeysHandler) Init(cache * gcache.Cache) Handler {
 	return &KeysHandler{
@@ -31,80 +35,31 @@ func (handler *KeysHandler) Handle(w http.ResponseWriter, req *http.Request) {
 
 	// Keys
 	if (len(req.Form) == 0 && req.Method == http.MethodGet) {
-		handler.keys(w)
+		handler.keysQuery(w, req)
 		return;
-	}
-
-	key := req.Form.Get("key")
-
-	if (key == "") {
-		w.WriteHeader(http.StatusBadRequest)
-		return
 	}
 
 	switch req.Method {
 
 	// Get
 	case http.MethodGet:
-		handler.get(key, w)
+		handler.getKeyQuery(w, req)
 		return
 
 	// Set
 	case http.MethodPost:
-
-		value := req.Form.Get("value")
-
-		if (value == "") {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		strTtl := req.Form.Get("ttl")
-
-		if (strTtl == "") {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		ttl, err := strconv.Atoi(strTtl)
-
-		if (err != nil) {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		handler.set(key, value, ttl)
+		handler.setKeyCommand(w, req)
 		return
 
 	// Update
 	case http.MethodPatch:
-
-		value := req.Form.Get("value")
-
-		if (value == "") {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		// Parse ttl
-		if (req.Form.Get("ttl") == "") {
-			handler.update(key, value, noTtlDefined, w)
-		} else {
-			ttl, err := strconv.Atoi(req.Form.Get("ttl"))
-			if err != nil || ttl < 0 {
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-
-			handler.update(key, value, ttl, w)
-		}
-
+		handler.updateCommand(w, req)
 		return
 
 
 	// Delete
 	case http.MethodDelete:
-		handler.remove(key, w, req)
+		handler.removeCommand(w, req)
 		return
 	}
 
@@ -112,13 +67,20 @@ func (handler *KeysHandler) Handle(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusBadRequest)
 }
 
-func (handler *KeysHandler) keys(w http.ResponseWriter) {
+func (handler *KeysHandler) keysQuery(w http.ResponseWriter, req *http.Request) {
 	keys := handler.Cache.Keys()
 	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprint(w, strings.Join(keys, " "))
 }
 
-func (handler *KeysHandler) get(key string, w http.ResponseWriter){
+func (handler *KeysHandler) getKeyQuery(w http.ResponseWriter, req *http.Request){
+
+	key := req.Form.Get(formKey)
+
+	if (key == "") {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	value, err := handler.Cache.Get(key)
 
@@ -136,14 +98,52 @@ func (handler *KeysHandler) get(key string, w http.ResponseWriter){
 	fmt.Fprint(w, value.(string))
 }
 
-func (handler *KeysHandler) set(key string, value string, ttl int){
-	handler.Cache.Set(key, value, handler.intToDurationInMinutes(ttl))
+func (handler *KeysHandler) setKeyCommand(w http.ResponseWriter, req *http.Request){
+
+	key := req.Form.Get(formKey)
+
+	if (key == "") {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	value := req.Form.Get(formValue)
+
+	if (value == "") {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	strTtl := req.Form.Get(formTtl)
+
+	if (strTtl == "") {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	ttl, err := strconv.Atoi(strTtl)
+
+	if (err != nil) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	handler.Cache.Set(key, value, intToDurationInMinutes(ttl))
 }
 
-func (handler *KeysHandler) intToDurationInMinutes(ttl int) time.Duration {
+func intToDurationInMinutes(ttl int) time.Duration {
 	return time.Duration(float64(int64(ttl) * time.Second.Nanoseconds()))
 }
-func (handler *KeysHandler) remove(key string, w http.ResponseWriter, req *http.Request) {
+func (handler *KeysHandler) removeCommand(w http.ResponseWriter, req *http.Request) {
+
+	key := req.Form.Get(formKey)
+
+	if (key == "") {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+
 	err := handler.Cache.Del(key)
 
 	if (err == gcache.ErrKeyNotFound) {
@@ -157,14 +157,34 @@ func (handler *KeysHandler) remove(key string, w http.ResponseWriter, req *http.
 	}
 }
 
-func (handler *KeysHandler) update(key string, value string, ttl int, w http.ResponseWriter) {
+func (handler *KeysHandler) updateCommand(w http.ResponseWriter, req *http.Request) {
+
+	key := req.Form.Get(formKey)
+
+	if (key == "") {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	value := req.Form.Get(formValue)
+
+	if (value == "") {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	var err error
 
-	if (ttl != noTtlDefined) {
+	if (req.Form.Get(formTtl) == "") {
 		err = handler.Cache.Update(key, value)
 	} else {
-		err = handler.Cache.UpdateWithTll(key, value, handler.intToDurationInMinutes(ttl))
+		ttl, err := strconv.Atoi(req.Form.Get(formTtl))
+		if err != nil || ttl < 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		err = handler.Cache.UpdateWithTll(key, value, intToDurationInMinutes(ttl))
 	}
 
 	if (err == gcache.ErrKeyNotFound) {

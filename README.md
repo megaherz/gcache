@@ -104,6 +104,7 @@ Url: /keys?key={key} <br/>
 ### List of keys
 Http method: GET <br/>
 Url: /keys <br/>
+Internally implemented as a linked list
 #### Response
 | Status Code  |    Meaning     |          Notes                |
 |--------------|----------------|-------------------------------|

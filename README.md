@@ -142,7 +142,7 @@ Pop removes element from the list therefore Http POST is used
 **list** - list name - string - required <br/>
 
 ### Range data from list (LRANGE)
-Http method: POST <br/>
+Http method: GET <br/>
 Url: /lists/range?list={list}&from={from}&to={to} <br/>
 
 Out of range indexes will not produce an error. If start is larger than the end of the list, an empty list is returned. 

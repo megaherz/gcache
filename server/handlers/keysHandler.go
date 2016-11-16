@@ -67,7 +67,17 @@ func (handler *KeysHandler) Handle(w http.ResponseWriter, req *http.Request) {
 func (handler *KeysHandler) keysQuery(w http.ResponseWriter, req *http.Request) {
 	keys := handler.Cache.Keys()
 	w.Header().Set("Content-Type", "text/plain")
-	fmt.Fprint(w, serializeStrings(keys))
+
+	// Serialize keys to string
+	serialized, err := serializeStrings(keys)
+
+	if (err != nil) {
+		log.Printf("keysQuery. Failed to serialize keys %s", keys)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprint(w, serialized)
 }
 
 func (handler *KeysHandler) getKeyQuery(w http.ResponseWriter, req *http.Request){

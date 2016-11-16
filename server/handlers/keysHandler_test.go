@@ -111,7 +111,7 @@ func TestKeysHandler_Keys(t *testing.T) {
 		t.Fatal(err)
 	}
 	if "" != string(actual) {
-		t.Error("Expected no keys")
+		t.Errorf("Expected no keys but recieved '%s'", string(actual))
 	}
 
 	// Insert some keys

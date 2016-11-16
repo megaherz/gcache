@@ -97,10 +97,10 @@ func TestListsHandler_Range(t *testing.T) {
 
 	log.Println("RANGE response", string(actual))
 
-	value := "2\n3\n4"
+	value := "2,3,4"
 
 	if value != string(actual) {
-		t.Errorf("Expected the message '%s'\n", value)
+		t.Errorf("Expected the message '%s' but recieved '%s'\n", value, string(actual))
 	}
 
 }

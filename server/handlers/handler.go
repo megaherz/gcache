@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 	"gcache"
+	"encoding/csv"
+	"bytes"
 	"strings"
 )
 
@@ -11,7 +13,7 @@ type Handler interface {
 	Init(cache * gcache.Cache) Handler
 }
 
-func serialize(items []interface{}) string {
+func serialize(items []interface{}) (string, error) {
 
 	var casted = make([]string, 0)
 
@@ -22,6 +24,17 @@ func serialize(items []interface{}) string {
 	return serializeStrings(casted)
 }
 
-func serializeStrings(items []string) string {
-	return strings.Join(items, "\n")
+func serializeStrings(items []string) (string, error) {
+
+	buffer := &bytes.Buffer{} // creates IO Writer
+	writer := csv.NewWriter(buffer)
+	err := writer.Write(items)
+
+	if err != nil {
+		return "", err
+	}
+
+	writer.Flush()
+
+	return strings.Trim(buffer.String(), "\n"), nil
 }

@@ -38,6 +38,7 @@ Rest-similar Cache with REST protocol in Golang
 ##Notes
 * To run the server execute the server.sh script in the ./run directory
 * Keys, List and Hashed share the same keys space. Therefore it's forbidden to create the same key for e.g. Keys and Lists 
+* Arrays for LRANGE and KEYS are returned as csv (encoding/csv package). Json is not used to make the protocol simple
 
 ##Protocol
 
@@ -106,10 +107,10 @@ Http method: GET <br/>
 Url: /keys <br/>
 Internally implemented as a linked list
 #### Response
-| Status Code  |    Meaning     |          Notes                |
-|--------------|----------------|-------------------------------|
-|      200     |  Ok            | Body contains a list of keys  |
-|      500     |  Server error  |                               |
+| Status Code  |    Meaning     |          Notes                    |
+|--------------|----------------|-----------------------------------|
+|      200     |  Ok            | Body contains a csv list of keys  |
+|      500     |  Server error  |                                   |
 
 
 ### Left Push data to list (LPUSH)
@@ -190,9 +191,7 @@ BenchmarkCache_SetGet-4   |   1000000   |     2032 ns/op
 ##TODO
 * Validation that a key does not contain whitespaces
 * Multiple set and get support on hashes
-* Arrays for LRANGE and KEYS are returned as \n separated values. 
-It's not safe if a value in List contains \n. Need to implement something as Array-Reply in Redis
-http://redis.io/topics/protocol#array-reply 
+
 
 
 

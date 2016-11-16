@@ -19,7 +19,7 @@ type ListsHandler struct {
 	Cache *gcache.Cache
 }
 
-func (handler *ListsHandler) Init(cache * gcache.Cache) Handler {
+func (handler *ListsHandler) Init(cache *gcache.Cache) Handler {
 	return &ListsHandler{
 		Cache: cache,
 	}
@@ -63,7 +63,7 @@ func (handler *ListsHandler) Handle(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusBadRequest)
 }
 
-func (handler *ListsHandler)  rangeQuery(w http.ResponseWriter, req *http.Request) {
+func (handler *ListsHandler) rangeQuery(w http.ResponseWriter, req *http.Request) {
 
 	listKey := req.Form.Get(formListKey)
 	if (listKey == "") {
@@ -83,7 +83,7 @@ func (handler *ListsHandler)  rangeQuery(w http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	items, err :=  handler.Cache.LRange(listKey, from, to)
+	items, err := handler.Cache.LRange(listKey, from, to)
 
 	if (err != nil) {
 
@@ -97,7 +97,16 @@ func (handler *ListsHandler)  rangeQuery(w http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	fmt.Fprint(w, serialize(items))
+	// Serialize items to string
+	serialized, err := serialize(items)
+
+	if (err != nil) {
+		log.Printf("rangeQuery. Failed to serialize items %s", items)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprint(w, serialized)
 }
 
 func (handler *ListsHandler) lPushCommand(w http.ResponseWriter, req *http.Request) {

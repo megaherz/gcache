@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"time"
 	"strconv"
-	"strings"
 )
 
 const  (
@@ -68,7 +67,7 @@ func (handler *KeysHandler) Handle(w http.ResponseWriter, req *http.Request) {
 func (handler *KeysHandler) keysQuery(w http.ResponseWriter, req *http.Request) {
 	keys := handler.Cache.Keys()
 	w.Header().Set("Content-Type", "text/plain")
-	fmt.Fprint(w, strings.Join(keys, " "))
+	fmt.Fprint(w, serializeStrings(keys))
 }
 
 func (handler *KeysHandler) getKeyQuery(w http.ResponseWriter, req *http.Request){

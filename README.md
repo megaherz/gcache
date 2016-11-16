@@ -190,6 +190,9 @@ BenchmarkCache_SetGet-4   |   1000000   |     2032 ns/op
 ##TODO
 * Validation that a key does not contain whitespaces
 * Multiple set and get support on hashes
+* Arrays for LRANGE and KEYS are returned as \n separated values. 
+It's not safe if a value in List contains \n. Need to implement something as Array-Reply in Redis
+http://redis.io/topics/protocol#array-reply 
 
 
 

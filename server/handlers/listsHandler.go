@@ -11,6 +11,8 @@ import (
 
 const (
 	formListKey = "listKey"
+	formRangeTo = "to"
+	formRangeFrom = "from"
 )
 
 type ListsHandler struct {
@@ -63,19 +65,19 @@ func (handler *ListsHandler) Handle(w http.ResponseWriter, req *http.Request) {
 
 func (handler *ListsHandler)  rangeQuery(w http.ResponseWriter, req *http.Request) {
 
-	listKey := req.Form.Get("listKey")
+	listKey := req.Form.Get(formListKey)
 	if (listKey == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	from, err := strconv.Atoi(req.Form.Get("from"))
+	from, err := strconv.Atoi(req.Form.Get(formRangeFrom))
 	if (err != nil) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	to, err := strconv.Atoi(req.Form.Get("to"))
+	to, err := strconv.Atoi(req.Form.Get(formRangeTo))
 	if (err != nil) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -95,7 +97,7 @@ func (handler *ListsHandler)  rangeQuery(w http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	fmt.Fprint(w, items)
+	fmt.Fprint(w, serialize(items))
 }
 
 func (handler *ListsHandler) lPushCommand(w http.ResponseWriter, req *http.Request) {

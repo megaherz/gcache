@@ -36,10 +36,12 @@ func TestClient_SetGetDel(t *testing.T) {
 }
 
 func TestClient_Keys(t *testing.T) {
+
 	client := NewClient(connectionString)
 	keys, err := client.Keys()
 
-	const key = "key"
+	const key1 = "key1"
+	const key2 = "key2"
 
 	if (err != nil) {
 		t.Error("Failed to get keys", err)
@@ -49,10 +51,18 @@ func TestClient_Keys(t *testing.T) {
 		t.Error("There should be no keys")
 	}
 
-	err = client.Set(key, "value", 5)
+	// Insert key1
+	err = client.Set(key1, "value", 5)
 
 	if (err != nil) {
-		t.Error("Failed to set the key", err)
+		t.Error("Failed to set the key1", err)
+	}
+
+	// Insert key2
+	err = client.Set(key2, "value", 5)
+
+	if (err != nil) {
+		t.Error("Failed to set the key2", err)
 	}
 
 	keys, err = client.Keys()
@@ -61,12 +71,21 @@ func TestClient_Keys(t *testing.T) {
 		t.Error("Failed to get keys", err)
 	}
 
-	if (len(keys) != 1){
+	if (len(keys) != 2){
 		t.Error("There should be only one keys")
 	}
 
-	if (keys[0] !=  key) {
-		t.Errorf("Unexpected key %s", keys[0])
+	if !contains(keys, key1) || !contains(keys, key2) {
+		t.Errorf("Keys contains unexpected key. Keys=%s", keys)
 	}
 
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }

@@ -6,7 +6,8 @@ import (
 	"errors"
 	"strconv"
 	"fmt"
-	"strings"
+	"encoding/csv"
+	"io"
 )
 
 var ErrKeyNotFound = errors.New("Key Not Found")
@@ -178,13 +179,15 @@ func (client *Client) Keys() ([]string, error) {
 	}
 
 	defer resp.Body.Close()
-	content, err := ioutil.ReadAll(resp.Body)
 
-	if (err != nil) {
+	reader := csv.NewReader(resp.Body)
+	result, err := reader.Read()
+
+	if (err != nil && err != io.EOF) {
 		return nil, err
 	}
 
-	return strings.Split(string(content), " "), nil
+	return result, nil
 }
 
 

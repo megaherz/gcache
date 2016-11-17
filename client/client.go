@@ -198,7 +198,7 @@ func (client*Client) RPush(listKey string, value string) error {
 }
 
 func (client*Client) push(method string, listKey string, value string) error {
-	resp, err := http.Post(fmt.Sprintf("%s/%s?listKey=%s&value=%s", client.addr, method, listKey, value), "", nil)
+	resp, err := http.Post(fmt.Sprintf("%s/lists?op=%s&listKey=%s&value=%s", client.addr, method, listKey, value), "", nil)
 
 	if (err != nil){
 		return err
@@ -216,7 +216,7 @@ func (client*Client) push(method string, listKey string, value string) error {
 }
 
 func (client* Client) pop(method string, listKey string) (string, error) {
-	resp, err := http.Post(fmt.Sprintf("%s/%s?listKey=%s", client.addr, method, listKey), "", nil)
+	resp, err := http.Post(fmt.Sprintf("%s/lists?op=%s&listKey=%s", client.addr, method, listKey), "", nil)
 
 	if (err != nil){
 		return "", err
@@ -251,7 +251,7 @@ func (client*Client) RPop(listKey string) (string, error) {
 
 func (client*Client) LRange(listKey string, from int, to int) ([]string, error) {
 
-	url := fmt.Sprintf("%s/range?listKey=%s&from=%d&to=%d", client.addr, listKey, from, to)
+	url := fmt.Sprintf("%s/lists?op=range&listKey=%s&from=%d&to=%d", client.addr, listKey, from, to)
 
 	resp, err := http.Get(url)
 

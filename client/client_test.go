@@ -115,7 +115,7 @@ func TestClient_LRange(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		err := client.LPush(listKey, strconv.Itoa(i))
 		if (err != nil) {
-			t.Errorf("Failed to lpush. ListKey = '%s'", listKey)
+			t.Errorf("Failed to lpush. ListKey = '%s'. Error = %s", listKey, err)
 		}
 	}
 

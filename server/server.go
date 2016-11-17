@@ -26,6 +26,7 @@ func (s *Server) Run(addr string) {
 	s.middleware("/lists", listsHandler)
 	s.middleware("/hashes", hashesHandler)
 
+
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 

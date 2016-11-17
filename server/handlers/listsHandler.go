@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"gcache"
 	"log"
-	"strings"
 	"strconv"
 	"fmt"
 )
@@ -13,6 +12,7 @@ const (
 	formListKey = "listKey"
 	formRangeTo = "to"
 	formRangeFrom = "from"
+	formOperation = "op"
 )
 
 type ListsHandler struct {
@@ -32,28 +32,28 @@ func (handler *ListsHandler) ServeHTTP(w http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	path := strings.ToLower(req.URL.Path)
+	operation := req.Form.Get(formOperation)
 
 	// Command-Query Router
 	switch req.Method {
 	case http.MethodGet:
-		if (strings.Contains(path, "range")) {
+		if operation == "range" {
 			handler.rangeQuery(w, req)
 			return
 		}
 
 	case http.MethodPost:
 
-		if (strings.Contains(path, "lpush")) {
+		if (operation ==  "lpush") {
 			handler.lPushCommand(w, req)
 			return
-		} else if (strings.Contains(path, "rpush")) {
+		} else if (operation == "rpush") {
 			handler.rPushCommand(w, req)
 			return
-		} else if (strings.Contains(path, "lpop")) {
+		} else if (operation ==  "lpop") {
 			handler.lPopCommand(w, req)
 			return
-		} else if (strings.Contains(path, "rpop")) {
+		} else if (operation == "rpop") {
 			handler.rPopCommand(w, req)
 			return
 		}

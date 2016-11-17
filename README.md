@@ -33,6 +33,18 @@ Rest-similar Cache with REST protocol in Golang
 	
 	// Get number of items in the cache
 	count := cache.Count()
+	
+	
+	// --- LISTS ---
+	
+	// Left push
+	cache.LPush("listKey", "value")
+	
+	// -- HASHES -- 
+	
+	// Add/Update hash valuy
+	cache.HSet("hashKey", "key", "some hash value")  
+	
 ```
 
 ##Notes
@@ -115,21 +127,21 @@ Internally implemented as a linked list
 
 ### Left Push data to list (LPUSH)
 Http method: POST <br/>
-Url: /lists/lpush?list={list}&value={value} <br/>
+Url: /lists?op=lpush&listKey={listKey}&value={value} <br/>
 #### Request
 **list** - list name - string - required <br/>
 **value** - value to push into the list - string - required <br/>
 
 ### Right Push data to list (RPUSH)
 Http method: POST <br/>
-Url: /lists/rpush?list={list}&value={value} <br/>
+Url: /lists?op=rpush&listKey={listKey}&value={value} <br/>
 #### Request
 **list** - list name - string - required <br/>
 **value** - value to push into the list - string - required <br/>
 
 ### Left Pop data from list (LPOP)
 Http method: POST <br/>
-Url: /lists/lpop?list={list} <br/>
+Url: /lists?op=lpop&listKey={list} <br/>
 Pop removes element from the list therefore Http POST is used
 #### Request
 **list** - list name - string - required <br/>
@@ -137,14 +149,14 @@ Pop removes element from the list therefore Http POST is used
 
 ### Right Pop data from list (RPOP)
 Http method: POST <br/>
-Url: /lists/rpop?list={list} <br/>
+Url: /lists?op=rpop&listKey={list} <br/>
 Pop removes element from the list therefore Http POST is used
 #### Request
 **list** - list name - string - required <br/>
 
 ### Range data from list (LRANGE)
 Http method: GET <br/>
-Url: /lists/range?list={list}&from={from}&to={to} <br/>
+Url: /lists?op=range&listKey={listKey}&from={from}&to={to} <br/>
 
 Out of range indexes will not produce an error. If start is larger than the end of the list, an empty list is returned. 
 If stop is larger than the actual end of the list, Redis will treat it like the last element of the list. <br/>

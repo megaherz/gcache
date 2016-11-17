@@ -1,14 +1,15 @@
 # Gcache
-Rest-similar Cache with REST protocol in Golang
+Redis-similar Cache with REST protocol in Golang
 
 ##Features
 * Expiration support (Ttl - time to live)
 * Pure Go implementation
 * Thread safe
 * REST protocol
+* Auth support
 * Go client library
 
-##Example Usage
+##Example of usage
 ```go
     // Create new cache
 	cache := gcache.NewCache()
@@ -47,8 +48,18 @@ Rest-similar Cache with REST protocol in Golang
 	
 ```
 
+##Server
+To run the server execute the server.sh script in the ./run directory  <br/>
+```go
+ // Run the server without authentication
+ server := server.NewServer()
+ 
+ // Run the server with authentication support. Password should be passed into the NewServerWithAuth function
+ server := server.NewServerWithAuth("pass")
+```
+
+
 ##Notes
-* To run the server execute the server.sh script in the ./run directory
 * Keys, List and Hashed share the same keys space. Therefore it's forbidden to create the same key for e.g. Keys and Lists 
 * Arrays for LRANGE and KEYS are returned as csv (encoding/csv package). Json is not used to make the protocol simple
 

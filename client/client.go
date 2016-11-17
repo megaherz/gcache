@@ -168,9 +168,7 @@ func unexpectedStatusError(status int) error {
 
 func (client *Client) Keys() ([]string, error) {
 
-	url := client.addr + "/keys"
-
-	resp, err := http.Get(url)
+	resp, err := http.Get(fmt.Sprintf("%s/keys", client.addr))
 
 	if (err != nil) {
 		return nil, err
@@ -186,7 +184,100 @@ func (client *Client) Keys() ([]string, error) {
 
 	defer resp.Body.Close()
 
-	reader := csv.NewReader(resp.Body)
+	return readCsv(resp.Body)
+}
+
+//------ LIST ---------
+
+func (client*Client) LPush(listKey string, value string) error {
+	return client.push("lpush", listKey, value)
+}
+
+func (client*Client) RPush(listKey string, value string) error {
+	return client.push("rpush", listKey, value)
+}
+
+func (client*Client) push(method string, listKey string, value string) error {
+	resp, err := http.Post(fmt.Sprintf("%s/%s?listKey=%s&value=%s", client.addr, method, listKey, value), "", nil)
+
+	if (err != nil){
+		return err
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		return  ErrServerError
+	}
+
+	if (resp.StatusCode != http.StatusOK) {
+		return unexpectedStatusError(resp.StatusCode)
+	}
+
+	return nil
+}
+
+func (client* Client) pop(method string, listKey string) (string, error) {
+	resp, err := http.Post(fmt.Sprintf("%s/%s?listKey=%s", client.addr, method, listKey), "", nil)
+
+	if (err != nil){
+		return "", err
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		return  "", ErrServerError
+	}
+
+	if (resp.StatusCode != http.StatusOK) {
+		return "", unexpectedStatusError(resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+	content, err := ioutil.ReadAll(resp.Body)
+
+	if (err != nil) {
+		return "", err
+	}
+
+	return string(content), nil
+
+}
+
+func (client*Client) LPop(listKey string) (string, error) {
+	return client.pop("lpop", listKey)
+}
+
+func (client*Client) RPop(listKey string) (string, error) {
+	return client.pop("rpop", listKey)
+}
+
+func (client*Client) LRange(listKey string, from int, to int) ([]string, error) {
+
+	url := fmt.Sprintf("%s/range?listKey=%s&from=%d&to=%d", client.addr, listKey, from, to)
+
+	resp, err := http.Get(url)
+
+	if (err != nil) {
+		return nil, err
+	}
+
+	if (resp.StatusCode == http.StatusNotFound){
+		return nil, ErrKeyNotFound
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		return nil, ErrServerError
+	}
+
+	if (resp.StatusCode != http.StatusOK) {
+		return nil, unexpectedStatusError(resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+
+	return readCsv(resp.Body)
+}
+
+func readCsv(body io.Reader) ([]string, error) {
+	reader := csv.NewReader(body)
 	result, err := reader.Read()
 
 	if (err != nil && err != io.EOF) {
@@ -194,28 +285,6 @@ func (client *Client) Keys() ([]string, error) {
 	}
 
 	return result, nil
-}
-
-//------ LIST ---------
-
-func (client*Client) LPush(listKey string, value string) error {
-	return nil
-}
-
-func (client*Client) RPush(listKey string, value string) error {
-	return nil
-}
-
-func (client*Client) LPop(listKey string) (string, error) {
-	return "", nil
-}
-
-func (client*Client) RPop(listKey string) (string, error) {
-	return "", nil
-}
-
-func (client*Client) LRange(listKey string, from int, to int) ([]string, error) {
-	return nil, nil
 }
 
 //------- HASH -----------

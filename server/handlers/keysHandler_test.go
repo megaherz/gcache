@@ -19,7 +19,7 @@ func TestKeysHandler_SetGet(t *testing.T) {
 		Cache: gcache.NewCache(),
 	}
 
-	ts := httptest.NewServer(http.HandlerFunc(keysHandler.Handle))
+	ts := httptest.NewServer(http.HandlerFunc(keysHandler.ServeHTTP))
 	defer ts.Close()
 
 	url := ts.URL + "?key=" + key
@@ -89,7 +89,7 @@ func TestKeysHandler_Keys(t *testing.T) {
 		Cache: gcache.NewCache(),
 	}
 
-	ts := httptest.NewServer(http.HandlerFunc(keysHandler.Handle))
+	ts := httptest.NewServer(http.HandlerFunc(keysHandler.ServeHTTP))
 	defer ts.Close()
 
 	url := ts.URL
@@ -149,7 +149,7 @@ func TestKeysHandler_SetDel(t *testing.T) {
 		Cache: gcache.NewCache(),
 	}
 
-	ts := httptest.NewServer(http.HandlerFunc(keysHandler.Handle))
+	ts := httptest.NewServer(http.HandlerFunc(keysHandler.ServeHTTP))
 	defer ts.Close()
 
 	url := ts.URL + "?key=" + key + "&ttl=5&value=" + value

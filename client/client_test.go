@@ -2,6 +2,8 @@ package client
 
 import (
 	"testing"
+	"log"
+	"strconv"
 )
 
 const connectionString string = "http://localhost:8080"
@@ -101,6 +103,34 @@ func TestClient_HSet_HGET(t *testing.T) {
 
 	if (returnedValue != value) {
 		t.Error("Value", value, "is not equal to returned value", returnedValue)
+	}
+}
+
+func TestClient_LRange(t *testing.T) {
+	const listKey = "rangelistKey"
+
+	client := NewClient(connectionString)
+
+	// LPUSH 10 items
+	for i := 0; i < 10; i++ {
+		err := client.LPush(listKey, strconv.Itoa(i))
+		if (err != nil) {
+			t.Errorf("Failed to lpush. ListKey = '%s'", listKey)
+		}
+	}
+
+	values, err := client.LRange(listKey, 2, 4)
+
+	if (err != nil) {
+		t.Fatalf("LRange failed. Err = %s", err)
+	}
+
+	log.Println("LRANGE", values)
+
+	for _, value := range values {
+		if value != "2" && value != "3" && value != "4" {
+			t.Errorf("Values contain unexpected value '%s", value)
+		}
 	}
 }
 

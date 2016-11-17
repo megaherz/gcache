@@ -16,7 +16,7 @@ func TestHashesHandler_HSetGSet(t *testing.T) {
 
 	handler := new(HashesHandler).Init(gcache.NewCache())
 
-	ts := httptest.NewServer(http.HandlerFunc(handler.Handle))
+	ts := httptest.NewServer(http.HandlerFunc(handler.ServeHTTP))
 	defer ts.Close()
 
 	url := ts.URL + "?hashKey=" + hashKey + "&key=" + key + "&value=" + value

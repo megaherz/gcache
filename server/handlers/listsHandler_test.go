@@ -17,7 +17,7 @@ func TestListsHandler_LPush_LPop(t *testing.T) {
 
 	handler := new(ListsHandler).Init(gcache.NewCache())
 
-	ts := httptest.NewServer(http.HandlerFunc(handler.Handle))
+	ts := httptest.NewServer(http.HandlerFunc(handler.ServeHTTP))
 	defer ts.Close()
 
 	url := ts.URL + "/lpush?listKey=" + listKey +  "&value=" + value
@@ -64,7 +64,7 @@ func TestListsHandler_Range(t *testing.T) {
 
 	handler := new(ListsHandler).Init(gcache.NewCache())
 
-	ts := httptest.NewServer(http.HandlerFunc(handler.Handle))
+	ts := httptest.NewServer(http.HandlerFunc(handler.ServeHTTP))
 	defer ts.Close()
 
 	// LPUSH 10 items

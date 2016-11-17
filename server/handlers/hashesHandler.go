@@ -87,9 +87,22 @@ func (handler *HashesHandler) hGetQuery(w http.ResponseWriter, req *http.Request
 	}
 
 	value, err := handler.Cache.HGet(hashKey, key)
+
 	if (err != nil) {
-		w.WriteHeader(http.StatusNotFound)
+
+		if (err == gcache.ErrKeyNotFound) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if (err == gcache.ErrHashKeyNotFound){
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
 		return
+
 	}
 
 	w.Header().Set("Content-Type", "text/plain")

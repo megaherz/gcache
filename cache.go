@@ -13,7 +13,8 @@ import (
 const DefaultEvictionInterval time.Duration = 1 * time.Second
 const MaxDuration time.Duration = 1<<63 - 1
 
-var ErrKeyNotFound = errors.New("Key Not Found")
+var ErrKeyNotFound = errors.New("Key not found")
+var ErrHashKeyNotFound = errors.New("Hash key not found")
 
 type item struct {
 	key      string
@@ -314,8 +315,6 @@ func (c*Cache) LRange(listKey string, from int, to int)  ([]interface{}, error) 
 		index := 0
 		result := make([]interface{}, 0)
 
-		//TODO: validate from and to
-
 		for e := l.Front(); e != nil; e = e.Next() {
 			if (index >= from && index <= to) {
 				result = append(result, e.Value)
@@ -372,7 +371,7 @@ func (c*Cache) HGet(hashKey string, key string) (interface{}, error) {
 		value, ok := hash[key]
 		if (!ok) {
 			c.mutex.RUnlock()
-			return nil, fmt.Errorf("Hash '%s' does not contain '%s' key", hashKey, key)
+			return nil, ErrHashKeyNotFound
 		}
 
 		c.mutex.RUnlock()

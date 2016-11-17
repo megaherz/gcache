@@ -11,7 +11,7 @@ const connectionString string = "http://localhost:8080"
 func TestClient_SetGetDel(t *testing.T) {
 
 	const key = "key"
-	const value  = "value"
+	const value = "value"
 
 	client := NewClient(connectionString)
 	err := client.Set(key, value, 5)
@@ -49,7 +49,7 @@ func TestClient_Keys(t *testing.T) {
 		t.Error("Failed to get keys", err)
 	}
 
-	if (len(keys) != 0){
+	if (len(keys) != 0) {
 		t.Error("There should be no keys")
 	}
 
@@ -73,7 +73,7 @@ func TestClient_Keys(t *testing.T) {
 		t.Error("Failed to get keys", err)
 	}
 
-	if (len(keys) != 2){
+	if (len(keys) != 2) {
 		t.Error("There should be only one keys")
 	}
 
@@ -86,7 +86,7 @@ func TestClient_Keys(t *testing.T) {
 func TestClient_HSet_HGET(t *testing.T) {
 	const hashKey = "hashKey"
 	const key = "key"
-	const value  = "value"
+	const value = "value"
 
 	client := NewClient(connectionString)
 	err := client.HSet(hashKey, key, value)

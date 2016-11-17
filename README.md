@@ -11,6 +11,9 @@ Redis-similar Cache with REST protocol in Golang
 
 ##Example of usage
 ```go
+
+    // --- KEYS ---  
+
     // Create new cache
 	cache := gcache.NewCache()
 
@@ -41,10 +44,26 @@ Redis-similar Cache with REST protocol in Golang
 	// Left push
 	cache.LPush("listKey", "value")
 	
+    // Right push                       
+	cache.RPush("listKey", "value")    
+	
+	// Left pop
+	value, err := cache.LPop("listKey")
+	
+    // Right pop                           
+    value, err := cache.RPop("listKey")   
+    
+    // Range
+    values, err := cache.LRange("listKey", 2, 10)
+    
+    	
 	// -- HASHES -- 
 	
 	// Add/Update hash valuy
 	cache.HSet("hashKey", "key", "some hash value")  
+	
+	// Get hash value
+	value, err := cache.HGet("hashKey", "key") 
 	
 ```
 
@@ -54,7 +73,8 @@ To run the server execute the server.sh script in the ./run directory  <br/>
  // Run the server without authentication
  server := server.NewServer()
  
- // Run the server with authentication support. Password should be passed into the NewServerWithAuth function
+ // Run the server with authentication support. 
+ // Password should be passed into the NewServerWithAuth function
  server := server.NewServerWithAuth("pass")
 ```
 
@@ -71,10 +91,11 @@ Url: /keys?key={key} <br/>
 #### Request
 **key** - key to get - string - required
 #### Response
-| Status Code  |    Meaning     |          Notes       |
+| Status Code  |    Meaning     |       Notes          |
 |--------------|----------------|----------------------|
-|      200     |  Ok            | Body contains value  |
+|      200     |  Ok            | Body is the value  |
 |      400     |  Bad Request   |                      |
+|      401     |  Auth failed   |                      |  
 |      404     |  Not Found     |                      |
 |      500     |  Server error  |                      |
 
@@ -91,6 +112,7 @@ Url: /keys?key={key}&value={value}&ttl={ttl} <br/>
 |--------------|----------------|----------------------|
 |      200     |  Ok            |                      |
 |      400     |  Bad Request   |                      |
+|      401     |  Auth failed   |                      |  
 |      500     |  Server error  |                      |
 
 
@@ -107,6 +129,7 @@ Url: /keys?key={key}&value={value}&ttl={ttl} <br/>
 |--------------|----------------|----------------------|
 |      200     |  Ok            |                      |
 |      400     |  Bad Request   |                      |
+|      401     |  Auth failed   |                      |  
 |      404     |  Not Found     |                      |
 |      500     |  Server error  |                      |
 
@@ -121,6 +144,7 @@ Url: /keys?key={key} <br/>
 |--------------|----------------|----------------------|
 |      200     |  Ok            |                      |
 |      400     |  Bad Request   |                      |
+|      401     |  Auth failed   |                      |  
 |      404     |  Not Found     |                      |
 |      500     |  Server error  |                      |
 
@@ -132,7 +156,8 @@ Internally implemented as a linked list
 #### Response
 | Status Code  |    Meaning     |          Notes                    |
 |--------------|----------------|-----------------------------------|
-|      200     |  Ok            | Body contains a csv list of keys  |
+|      200     |  Ok            | Body is the csv list of keys  |
+|      401     |  Auth failed   |                                   |  
 |      500     |  Server error  |                                   |
 
 
@@ -143,12 +168,29 @@ Url: /lists?op=lpush&listKey={listKey}&value={value} <br/>
 **list** - list name - string - required <br/>
 **value** - value to push into the list - string - required <br/>
 
+#### Response                                              
+| Status Code  |    Meaning     |          Notes       |   
+|--------------|----------------|----------------------|   
+|      200     |  Ok            |                      |   
+|      400     |  Bad Request   |                      |   
+|      401     |  Auth failed   |                      |     
+|      500     |  Server error  |                      |   
+
 ### Right Push data to list (RPUSH)
 Http method: POST <br/>
 Url: /lists?op=rpush&listKey={listKey}&value={value} <br/>
 #### Request
 **list** - list name - string - required <br/>
 **value** - value to push into the list - string - required <br/>
+
+#### Response                                            
+| Status Code  |    Meaning     |          Notes       | 
+|--------------|----------------|----------------------| 
+|      200     |  Ok            |                      | 
+|      400     |  Bad Request   |                      | 
+|      401     |  Auth failed   |                      | 
+|      500     |  Server error  |                      | 
+
 
 ### Left Pop data from list (LPOP)
 Http method: POST <br/>
@@ -157,6 +199,15 @@ Pop removes element from the list therefore Http POST is used
 #### Request
 **list** - list name - string - required <br/>
 
+#### Response                                            
+| Status Code  |    Meaning     |          Notes       | 
+|--------------|----------------|----------------------| 
+|      200     |  Ok            | Body is the  poped value | 
+|      400     |  Bad Request   |                      | 
+|      401     |  Auth failed   |                      | 
+|      404     |  Not Found     |                      |  
+|      500     |  Server error  |                      | 
+
 
 ### Right Pop data from list (RPOP)
 Http method: POST <br/>
@@ -164,6 +215,16 @@ Url: /lists?op=rpop&listKey={list} <br/>
 Pop removes element from the list therefore Http POST is used
 #### Request
 **list** - list name - string - required <br/>
+
+#### Response                                             
+| Status Code  |    Meaning     |          Notes       |  
+|--------------|----------------|----------------------|  
+|      200     |  Ok            | Body is the  poped value |
+|      400     |  Bad Request   |                      |  
+|      401     |  Auth failed   |                      |  
+|      404     |  Not Found     |                      |  
+|      500     |  Server error  |                      |  
+
 
 ### Range data from list (LRANGE)
 Http method: GET <br/>
@@ -174,19 +235,47 @@ If stop is larger than the actual end of the list, Redis will treat it like the 
 
 Note that if you have a list of numbers from 0 to 100, LRANGE list 0 10 will return 11 elements, that is, the rightmost item is included. 
 
+
 #### Request
 **list** - list name - string - required <br/>
 **from** - from index in range - int - required <br/>
 **to** - to index in range - int - required <br/>
 
+#### Response                                                         
+| Status Code  |    Meaning     |          Notes       |              
+|--------------|----------------|----------------------|              
+|      200     |  Ok            | Body is the cvs list of values |    
+|      400     |  Bad Request   |                      |              
+|      401     |  Auth failed   |                      |              
+|      404     |  Not Found     |                      |              
+|      500     |  Server error  |                      |              
+
+
 ### Get field of hash (HGET)
 Http method: GET <br/>
 Url: /hashes/key={key}<br/>
+
+#### Response                                                         
+| Status Code  |    Meaning     |          Notes       |              
+|--------------|----------------|----------------------|              
+|      200     |  Ok            |                      |    
+|      400     |  Bad Request   |Including when the  key in hash is not found  |              
+|      401     |  Auth failed   |                      |              
+|      404     |  Not Found     |                      |              
+|      500     |  Server error  |                      |              
+
 
 ### Set field of hash (HSET)
 Http method: POST <br/>
 Url: /hashes/key={key}&value={value} <br/>
 
+#### Response                                              
+| Status Code  |    Meaning     |          Notes       |   
+|--------------|----------------|----------------------|   
+|      200     |  Ok            |                      |   
+|      400     |  Bad Request   |                      |   
+|      401     |  Auth failed   |                      |    
+|      500     |  Server error  |                      |   
 
 ##Performance
 ```go

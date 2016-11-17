@@ -6,9 +6,13 @@ import (
 	"os/signal"
 	"os"
 	"syscall"
+	"flag"
 )
 
 func main() {
+
+	psw := flag.String("pws", "", "authentication password")
+	flag.Parse()
 
 	// Exit on Ctrl+C
 	c := make(chan os.Signal, 2)
@@ -18,7 +22,7 @@ func main() {
 		os.Exit(1)
 	}()
 
-	server := server.NewServer()
+	server := server.NewServerWithAuth(*psw)
 	server.SetUrlLogging(true)
 	server.Run(":8080")
 }

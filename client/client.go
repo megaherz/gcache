@@ -4,36 +4,51 @@ import (
 	"net/http"
 	"io/ioutil"
 	"errors"
-	"strconv"
 	"fmt"
 	"encoding/csv"
 	"io"
 )
+
+const headerAuthorization  = "Authorization"
 
 var ErrKeyNotFound = errors.New("Key Not Found")
 var ErrServerError = errors.New("Internal Server error")
 
 type Client struct {
 	addr string
+	psw string
 }
 
 func NewClient (addr string) *Client  {
-	return &Client{
-		addr: addr,
-	}
+	return NewClientWithAuth(addr, "")
 }
 
 func NewClientWithAuth (addr string, psw string) *Client  {
 	return &Client{
 		addr: addr,
+		psw: psw,
 	}
 }
 
+func (client *Client) doRequest(method, urlStr string, body io.Reader) (*http.Response, error) {
+
+	req, err := http.NewRequest(method, client.addr + urlStr, body)
+	if (err != nil) {
+		return nil, err
+	}
+
+	// Set the authorization header if password is set
+	if (client.psw != "") {
+		req.Header.Set(headerAuthorization, client.psw)
+	}
+
+	return http.DefaultClient.Do(req)
+}
+
+
 func (client *Client) Get(key string) (string, error) {
 
-	url := client.addr + "/keys?key=" + key
-
-   	resp, err := http.Get(url)
+   	resp, err := client.doRequest(http.MethodGet, "/keys?key=" + key, nil)
 
 	if (err != nil) {
 		return "", err
@@ -64,9 +79,9 @@ func (client *Client) Get(key string) (string, error) {
 
 func (client *Client) Set(key string, value string, ttl int) error {
 
-	url := client.addr + "/keys?key=" + key + "&value=" + value + "&ttl=" + strconv.Itoa(ttl)
+	url := fmt.Sprintf("/keys?key=%s&value=%s&ttl=%d", key, value, ttl)
 
-	resp, err := http.Post(url, "", nil)
+	resp, err := client.doRequest(http.MethodPost, url, nil)
 	if (err != nil) {
 		return err
 	}
@@ -83,17 +98,9 @@ func (client *Client) Set(key string, value string, ttl int) error {
 
 }
 
-func update(url string) error  {
+func (client *Client) updateKey(url string) error  {
 
-	req, err := http.NewRequest(http.MethodPatch, url, nil)
-
-	if (err != nil) {
-		return err
-	}
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := client.doRequest(http.MethodPatch, url, nil)
 
 	if (err != nil) {
 		return err
@@ -120,28 +127,20 @@ func update(url string) error  {
 }
 
 func (client *Client) Update(key string, value string) error {
-	url := client.addr + "/keys?key=" + key + "&value=" + value
-	return update(url)
+	url := fmt.Sprintf("/keys?key=%s&value=%s", key, value)
+	return client.updateKey(url)
 }
 
 func (client *Client) UpdateWithTtl(key string, value string, ttl int) error {
-	url := client.addr + "/keys?key=" + key + "&value=" + value + "&ttl=" + strconv.Itoa(ttl)
-	return update(url)
+	url := fmt.Sprintf("/keys?key=%s&value=%s&ttl=%d", key, value, ttl)
+	return client.updateKey(url)
 }
 
 
 func (client *Client) Del(key string) error {
-	url := client.addr + "/keys?key=" + key
+	url := "/keys?key=" + key
 
-	req, err := http.NewRequest(http.MethodDelete, url, nil)
-
-	if (err != nil) {
-		return err
-	}
-
-	httpClient := &http.Client{}
-
-	resp, err := httpClient.Do(req)
+	resp, err := client.doRequest(http.MethodDelete, url, nil)
 
 	if (err != nil) {
 		return err
@@ -168,7 +167,7 @@ func unexpectedStatusError(status int) error {
 
 func (client *Client) Keys() ([]string, error) {
 
-	resp, err := http.Get(fmt.Sprintf("%s/keys", client.addr))
+	resp, err := client.doRequest(http.MethodGet, "/keys", nil)
 
 	if (err != nil) {
 		return nil, err
@@ -197,63 +196,12 @@ func (client*Client) RPush(listKey string, value string) error {
 	return client.push("rpush", listKey, value)
 }
 
-func (client*Client) push(method string, listKey string, value string) error {
-	resp, err := http.Post(fmt.Sprintf("%s/lists?op=%s&listKey=%s&value=%s", client.addr, method, listKey, value), "", nil)
-
-	if (err != nil){
-		return err
-	}
-
-	if resp.StatusCode == http.StatusInternalServerError {
-		return  ErrServerError
-	}
-
-	if (resp.StatusCode != http.StatusOK) {
-		return unexpectedStatusError(resp.StatusCode)
-	}
-
-	return nil
-}
-
-func (client* Client) pop(method string, listKey string) (string, error) {
-	resp, err := http.Post(fmt.Sprintf("%s/lists?op=%s&listKey=%s", client.addr, method, listKey), "", nil)
-
-	if (err != nil){
-		return "", err
-	}
-
-	if resp.StatusCode == http.StatusInternalServerError {
-		return  "", ErrServerError
-	}
-
-	if (resp.StatusCode != http.StatusOK) {
-		return "", unexpectedStatusError(resp.StatusCode)
-	}
-
-	defer resp.Body.Close()
-	content, err := ioutil.ReadAll(resp.Body)
-
-	if (err != nil) {
-		return "", err
-	}
-
-	return string(content), nil
-
-}
-
-func (client*Client) LPop(listKey string) (string, error) {
-	return client.pop("lpop", listKey)
-}
-
-func (client*Client) RPop(listKey string) (string, error) {
-	return client.pop("rpop", listKey)
-}
 
 func (client*Client) LRange(listKey string, from int, to int) ([]string, error) {
 
-	url := fmt.Sprintf("%s/lists?op=range&listKey=%s&from=%d&to=%d", client.addr, listKey, from, to)
+	url := fmt.Sprintf("/lists?op=range&listKey=%s&from=%d&to=%d", listKey, from, to)
 
-	resp, err := http.Get(url)
+	resp, err := client.doRequest(http.MethodGet, url, nil)
 
 	if (err != nil) {
 		return nil, err
@@ -276,6 +224,63 @@ func (client*Client) LRange(listKey string, from int, to int) ([]string, error) 
 	return readCsv(resp.Body)
 }
 
+func (client*Client) LPop(listKey string) (string, error) {
+	return client.pop("lpop", listKey)
+}
+
+func (client*Client) RPop(listKey string) (string, error) {
+	return client.pop("rpop", listKey)
+}
+
+func (client*Client) push(method string, listKey string, value string) error {
+
+	url := fmt.Sprintf("/lists?op=%s&listKey=%s&value=%s",method, listKey, value)
+
+	resp, err := client.doRequest(http.MethodPost, url, nil)
+
+	if (err != nil){
+		return err
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		return  ErrServerError
+	}
+
+	if (resp.StatusCode != http.StatusOK) {
+		return unexpectedStatusError(resp.StatusCode)
+	}
+
+	return nil
+}
+
+func (client* Client) pop(method string, listKey string) (string, error) {
+
+	url := fmt.Sprintf("/lists?op=%s&listKey=%s", method, listKey)
+	resp, err := client.doRequest(http.MethodPost, url, nil)
+
+	if (err != nil){
+		return "", err
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		return  "", ErrServerError
+	}
+
+	if (resp.StatusCode != http.StatusOK) {
+		return "", unexpectedStatusError(resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+	content, err := ioutil.ReadAll(resp.Body)
+
+	if (err != nil) {
+		return "", err
+	}
+
+	return string(content), nil
+}
+
+
 func readCsv(body io.Reader) ([]string, error) {
 	reader := csv.NewReader(body)
 	result, err := reader.Read()
@@ -290,9 +295,9 @@ func readCsv(body io.Reader) ([]string, error) {
 //------- HASH -----------
 
 func (client* Client) HGet(hashKey string, key string) (string, error) {
-	url := fmt.Sprintf("%s/hashes?hashKey=%s&key=%s", client.addr, hashKey, key)
+	url := fmt.Sprintf("/hashes?hashKey=%s&key=%s", hashKey, key)
 
-	resp, err := http.Get(url)
+	resp, err := client.doRequest(http.MethodGet, url, nil)
 
 	if (err != nil) {
 		return "", err
@@ -321,9 +326,10 @@ func (client* Client) HGet(hashKey string, key string) (string, error) {
 }
 
 func (client* Client) HSet(hashKey string, key string, value string) error  {
-	url := fmt.Sprintf("%s/hashes?hashKey=%s&key=%s&value=%s", client.addr, hashKey, key, value)
+	url := fmt.Sprintf("/hashes?hashKey=%s&key=%s&value=%s", hashKey, key, value)
 
-	resp, err := http.Post(url, "", nil)
+	resp, err := client.doRequest(http.MethodPost, url, nil)
+
 	if (err != nil) {
 		return err
 	}

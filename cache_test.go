@@ -180,18 +180,18 @@ func TestCache_Eviction(t *testing.T) {
 
 func TestCache_LPush_LPop(t *testing.T) {
 
-	const listKey  = "list"
+	const key  = "list"
 	const value  = "value"
 
 	cache := NewCache()
 
-	err := cache.LPush(listKey, value)
+	err := cache.LPush(key, value)
 
 	if (err != nil) {
 		t.Fatal("Failed to push value into the list")
 	}
 
-	returnedValue, err := cache.LPop(listKey)
+	returnedValue, err := cache.LPop(key)
 
 	if (err != nil) {
 		t.Fatal("Failed to pop value from the list")
@@ -204,18 +204,18 @@ func TestCache_LPush_LPop(t *testing.T) {
 
 func TestCache_RPush_RPop(t *testing.T) {
 
-	const listKey  = "list"
+	const key  = "list"
 	const value  = "value"
 
 	cache := NewCache()
 
-	err := cache.RPush(listKey, value)
+	err := cache.RPush(key, value)
 
 	if (err != nil) {
 		t.Fatal("Failed to push value into the list")
 	}
 
-	returnedValue, err := cache.RPop(listKey)
+	returnedValue, err := cache.RPop(key)
 
 	if (err != nil) {
 		t.Fatal("Failed to pop value from the list")
@@ -229,13 +229,13 @@ func TestCache_RPush_RPop(t *testing.T) {
 func TestCache_LRange(t *testing.T) {
 	cache := NewCache()
 
-	const listKey  = "list"
+	const key  = "list"
 
 	for i:= 0; i < 100; i++ {
-		cache.LPush(listKey, i)
+		cache.LPush(key, i)
 	}
 
-	values, err := cache.LRange(listKey, 50, 70)
+	values, err := cache.LRange(key, 50, 70)
 
 	if (err != nil) {
 		t.Fatal("Failed to get a range of values from the list")
@@ -246,19 +246,19 @@ func TestCache_LRange(t *testing.T) {
 
 func TestCache_HSet_HGet(t *testing.T) {
 
-	const listKey  = "list"
 	const key  = "list"
+	const listKey  = "list"
 	const value  = "value"
 
 	cache := NewCache()
 
-	err := cache.HSet(listKey, key, value)
+	err := cache.HSet(key, listKey, value)
 
 	if (err != nil) {
 		t.Fatal("Failed to push value into the hash")
 	}
 
-	returnedValue, err := cache.HGet(listKey, key)
+	returnedValue, err := cache.HGet(key, listKey)
 
 	if (err != nil) {
 		t.Fatal("Failed to get value from the hash")

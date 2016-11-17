@@ -10,8 +10,8 @@ import (
 
 func TestHashesHandler_HSetGSet(t *testing.T) {
 
-	const hashKey  = "hashKey"
 	const key  = "key"
+	const hashKey  = "hashKey"
 	const value  = "value"
 
 	handler := new(HashesHandler).Init(gcache.NewCache())

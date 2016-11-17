@@ -31,14 +31,13 @@ func (s *Server) Run(addr string) {
 }
 
 func (s *Server) middleware(route string, handler handlers.Handler){
-	http.HandleFunc(route,
-		s.urlLoggingHandler(s.authHandler(handler)).ServeHTTP)
+	handleFunc := s.urlLoggingHandler(s.authHandler(handler)).ServeHTTP
+	http.HandleFunc(route, handleFunc)
 }
 
+// Server without auth
 func NewServer() *Server {
-	return &Server{
-		cache: gcache.NewCache(),
-	}
+	return NewServerWithAuth("")
 }
 
 func NewServerWithAuth(pws string) *Server {

@@ -221,21 +221,21 @@ func (c*Cache) Keys() ([]string) {
 // ====== LIST ======
 
 // Left push value into the list
-func (c*Cache) LPush(listKey string, value interface{}) error {
+func (c*Cache) LPush(key string, value interface{}) error {
 
-	return c.listPush(listKey, value, func(l *list.List)  {
+	return c.listPush(key, value, func(l *list.List)  {
 		l.PushBack(value)
 	})
 }
 
-func (c*Cache) listPush(listKey string, value interface{}, push func(l *list.List)) error {
+func (c*Cache) listPush(key string, value interface{}, push func(l *list.List)) error {
 	c.mutex.Lock()
 
-	if item, ok := c.getItem(listKey); ok {
+	if item, ok := c.getItem(key); ok {
 		l, ok := item.value.(*list.List)
 		if (!ok){
 			c.mutex.Unlock()
-			return fmt.Errorf("Given %s is not a list key", listKey)
+			return fmt.Errorf("Given '%s' is not a list key", key)
 		}
 		push(l)
 	} else {
@@ -243,7 +243,7 @@ func (c*Cache) listPush(listKey string, value interface{}, push func(l *list.Lis
 		l := list.New()
 		l = l.Init()
 		l.PushFront(value)
-		c.set(listKey, l, MaxDuration)
+		c.set(key, l, MaxDuration)
 	}
 
 	c.mutex.Unlock()
@@ -251,14 +251,14 @@ func (c*Cache) listPush(listKey string, value interface{}, push func(l *list.Lis
 	return nil
 }
 
-func (c*Cache) listPop(listKey string, pop func(l *list.List) interface{}) (interface{}, error) {
+func (c*Cache) listPop(key string, pop func(l *list.List) interface{}) (interface{}, error) {
 	c.mutex.RLock()
 
-	if item, ok := c.getItem(listKey); ok {
+	if item, ok := c.getItem(key); ok {
 		l, ok := item.value.(*list.List)
 		if (!ok){
 			c.mutex.RUnlock()
-			return nil, fmt.Errorf("Given %s is not a list key", listKey)
+			return nil, fmt.Errorf("Given %s is not a list key", key)
 		}
 
 		element := pop(l)
@@ -273,17 +273,17 @@ func (c*Cache) listPop(listKey string, pop func(l *list.List) interface{}) (inte
 }
 
 // Right push value into the list
-func (c*Cache) RPush(listKey string, value interface{}) error {
+func (c*Cache) RPush(key string, value interface{}) error {
 
-	return c.listPush(listKey, value, func(l *list.List)  {
+	return c.listPush(key, value, func(l *list.List)  {
 		l.PushFront(value)
 	})
 }
 
 // Left pop value from the list
-func (c*Cache) LPop(listKey string) (interface{}, error) {
+func (c*Cache) LPop(key string) (interface{}, error) {
 
-	return c.listPop(listKey, func(l *list.List) interface{} {
+	return c.listPop(key, func(l *list.List) interface{} {
 		elem := l.Back()
 		l.Remove(elem)
 		return elem.Value
@@ -291,9 +291,9 @@ func (c*Cache) LPop(listKey string) (interface{}, error) {
 }
 
 // Right pop vaues from the list
-func (c*Cache) RPop(listKey string)  (interface{}, error)  {
+func (c*Cache) RPop(key string)  (interface{}, error)  {
 
-	return c.listPop(listKey, func(l *list.List) interface{} {
+	return c.listPop(key, func(l *list.List) interface{} {
 		elem := l.Front()
 		l.Remove(elem)
 		return elem.Value
@@ -301,15 +301,15 @@ func (c*Cache) RPop(listKey string)  (interface{}, error)  {
 }
 
 // Returns a range of values from the list
-func (c*Cache) LRange(listKey string, from int, to int)  ([]interface{}, error)  {
+func (c*Cache) LRange(key string, from int, to int)  ([]interface{}, error)  {
 
 	c.mutex.RLock()
 
-	if item, ok := c.getItem(listKey); ok {
+	if item, ok := c.getItem(key); ok {
 		l, ok := item.value.(*list.List)
 		if (!ok){
 			c.mutex.RUnlock()
-			return nil, fmt.Errorf("Given %s is not a list key", listKey)
+			return nil, fmt.Errorf("Given '%s' is not a list key", key)
 		}
 
 		index := 0
@@ -335,21 +335,21 @@ func (c*Cache) LRange(listKey string, from int, to int)  ([]interface{}, error) 
 
 // ====== HASH ======
 
-func (c*Cache) HSet(hashKey string, key string, value interface{}) error {
+func (c*Cache) HSet(key string, hashKey string, value interface{}) error {
 	c.mutex.Lock()
 
-	if item, ok := c.getItem(hashKey); ok {
+	if item, ok := c.getItem(key); ok {
 		hash, ok := item.value.(map[string]interface{})
 		if (!ok){
 			c.mutex.Unlock()
-			return fmt.Errorf("Given %s is not a hash key", hashKey)
+			return fmt.Errorf("Given %s is not a hash key", key)
 		}
-		hash[key] = value
+		hash[hashKey] = value
 	} else {
 		//Create new hash
 		hash := make(map[string]interface{})
-		hash[key] = value
-		c.set(hashKey, hash, MaxDuration)
+		hash[hashKey] = value
+		c.set(key, hash, MaxDuration)
 	}
 
 	c.mutex.Unlock()
@@ -357,18 +357,18 @@ func (c*Cache) HSet(hashKey string, key string, value interface{}) error {
 	return nil
 }
 
-func (c*Cache) HGet(hashKey string, key string) (interface{}, error) {
+func (c*Cache) HGet(key string, hashKey string) (interface{}, error) {
 
 	c.mutex.RLock()
 
-	if item, ok := c.getItem(hashKey); ok {
+	if item, ok := c.getItem(key); ok {
 		hash, ok := item.value.(map[string]interface{})
 		if (!ok){
 			c.mutex.RUnlock()
-			return nil, fmt.Errorf("Given '%s' is not a hash key", hashKey)
+			return nil, fmt.Errorf("Given '%s' is not a hash key", key)
 		}
 
-		value, ok := hash[key]
+		value, ok := hash[hashKey]
 		if (!ok) {
 			c.mutex.RUnlock()
 			return nil, ErrHashKeyNotFound

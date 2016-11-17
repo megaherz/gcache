@@ -12,7 +12,7 @@ import (
 
 func TestListsHandler_LPush_LPop(t *testing.T) {
 
-	const listKey  = "listKey"
+	const key  = "listKey"
 	const value  = "value"
 
 	handler := new(ListsHandler).Init(gcache.NewCache())
@@ -20,7 +20,8 @@ func TestListsHandler_LPush_LPop(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(handler.ServeHTTP))
 	defer ts.Close()
 
-	url := ts.URL + "/lpush?listKey=" + listKey +  "&value=" + value
+	// Push
+	url := ts.URL + "?op=lpush&key=" + key + "&value=" + value
 
 	rr, err := http.Post(url, "", nil)
 
@@ -34,7 +35,8 @@ func TestListsHandler_LPush_LPop(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	url = ts.URL + "/lpop?listKey=" + listKey
+	// Pop
+	url = ts.URL + "?op=lpop&key=" + key
 
 	rr, err = http.Post(url, "", nil)
 
@@ -48,6 +50,7 @@ func TestListsHandler_LPush_LPop(t *testing.T) {
 			status, http.StatusOK)
 	}
 
+	//
 	actual, err := ioutil.ReadAll(rr.Body)
 	if err != nil {
 		t.Fatal(err)
@@ -60,7 +63,7 @@ func TestListsHandler_LPush_LPop(t *testing.T) {
 
 func TestListsHandler_Range(t *testing.T) {
 
-	const listKey  = "listKey"
+	const key  = "key"
 
 	handler := new(ListsHandler).Init(gcache.NewCache())
 
@@ -69,14 +72,14 @@ func TestListsHandler_Range(t *testing.T) {
 
 	// LPUSH 10 items
 	for i := 0; i < 10; i++ {
-		url := fmt.Sprintf("%s/lpush?listKey=%s&value=%d", ts.URL, listKey, i)
+		url := fmt.Sprintf("%s?op=lpush&key=%s&value=%d", ts.URL, key, i)
 		_, err := http.Post(url, "", nil)
 		if (err != nil) {
 			t.Errorf("Failed to lpush %url", url)
 		}
 	}
 
-	url := fmt.Sprintf("%s/range?listKey=%s&from=%d&to=%d", ts.URL, listKey, 2, 4)
+	url := fmt.Sprintf("%s?op=range&key=%s&from=%d&to=%d", ts.URL, key, 2, 4)
 
 	rr, err := http.Get(url)
 

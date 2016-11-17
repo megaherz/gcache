@@ -9,7 +9,6 @@ import (
 )
 
 const (
-	formListKey = "listKey"
 	formRangeTo = "to"
 	formRangeFrom = "from"
 	formOperation = "op"
@@ -44,7 +43,7 @@ func (handler *ListsHandler) ServeHTTP(w http.ResponseWriter, req *http.Request)
 
 	case http.MethodPost:
 
-		if (operation ==  "lpush") {
+		if (operation == "lpush") {
 			handler.lPushCommand(w, req)
 			return
 		} else if (operation == "rpush") {
@@ -65,8 +64,8 @@ func (handler *ListsHandler) ServeHTTP(w http.ResponseWriter, req *http.Request)
 
 func (handler *ListsHandler) rangeQuery(w http.ResponseWriter, req *http.Request) {
 
-	listKey := req.Form.Get(formListKey)
-	if (listKey == "") {
+	key := req.Form.Get(formKey)
+	if (key == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -83,7 +82,7 @@ func (handler *ListsHandler) rangeQuery(w http.ResponseWriter, req *http.Request
 		return
 	}
 
-	items, err := handler.Cache.LRange(listKey, from, to)
+	items, err := handler.Cache.LRange(key, from, to)
 
 	if (err != nil) {
 
@@ -111,8 +110,8 @@ func (handler *ListsHandler) rangeQuery(w http.ResponseWriter, req *http.Request
 
 func (handler *ListsHandler) lPushCommand(w http.ResponseWriter, req *http.Request) {
 
-	listKey := req.Form.Get(formListKey)
-	if (listKey == "") {
+	key := req.Form.Get(formKey)
+	if (key == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -123,25 +122,20 @@ func (handler *ListsHandler) lPushCommand(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	err := handler.Cache.LPush(listKey, value)
+	err := handler.Cache.LPush(key, value)
+
 
 	if (err != nil) {
-
-		if (err == gcache.ErrKeyNotFound) {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-
 		fmt.Fprint(w, err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
 
 func (handler *ListsHandler) rPushCommand(w http.ResponseWriter, req *http.Request) {
 
-	listKey := req.Form.Get(formListKey)
-	if (listKey == "") {
+	key := req.Form.Get(formKey)
+	if (key == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -152,30 +146,24 @@ func (handler *ListsHandler) rPushCommand(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	err := handler.Cache.RPush(listKey, value)
+	err := handler.Cache.RPush(key, value)
 
 	if (err != nil) {
-
-		if (err == gcache.ErrKeyNotFound) {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-
 		fmt.Fprint(w, err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
 
 func (handler *ListsHandler)  lPopCommand(w http.ResponseWriter, req *http.Request) {
 
-	listKey := req.Form.Get(formListKey)
-	if (listKey == "") {
+	key := req.Form.Get(formKey)
+	if (key == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	value, err := handler.Cache.LPop(listKey)
+	value, err := handler.Cache.LPop(key)
 
 	if (err != nil) {
 
@@ -185,7 +173,7 @@ func (handler *ListsHandler)  lPopCommand(w http.ResponseWriter, req *http.Reque
 		}
 
 		fmt.Fprint(w, err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -194,13 +182,13 @@ func (handler *ListsHandler)  lPopCommand(w http.ResponseWriter, req *http.Reque
 
 func (handler *ListsHandler)  rPopCommand(w http.ResponseWriter, req *http.Request) {
 
-	listKey := req.Form.Get(formListKey)
-	if (listKey == "") {
+	key := req.Form.Get(formKey)
+	if (key == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	value, err := handler.Cache.RPop(listKey)
+	value, err := handler.Cache.RPop(key)
 
 	if (err != nil) {
 
@@ -210,7 +198,7 @@ func (handler *ListsHandler)  rPopCommand(w http.ResponseWriter, req *http.Reque
 		}
 
 		fmt.Fprint(w, err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 

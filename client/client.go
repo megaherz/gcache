@@ -188,18 +188,18 @@ func (client *Client) Keys() ([]string, error) {
 
 //------ LIST ---------
 
-func (client*Client) LPush(listKey string, value string) error {
-	return client.push("lpush", listKey, value)
+func (client*Client) LPush(key string, value string) error {
+	return client.push("lpush", key, value)
 }
 
-func (client*Client) RPush(listKey string, value string) error {
-	return client.push("rpush", listKey, value)
+func (client*Client) RPush(key string, value string) error {
+	return client.push("rpush", key, value)
 }
 
 
-func (client*Client) LRange(listKey string, from int, to int) ([]string, error) {
+func (client*Client) LRange(key string, from int, to int) ([]string, error) {
 
-	url := fmt.Sprintf("/lists?op=range&listKey=%s&from=%d&to=%d", listKey, from, to)
+	url := fmt.Sprintf("/lists?op=range&key=%s&from=%d&to=%d", key, from, to)
 
 	resp, err := client.doRequest(http.MethodGet, url, nil)
 
@@ -224,17 +224,17 @@ func (client*Client) LRange(listKey string, from int, to int) ([]string, error) 
 	return readCsv(resp.Body)
 }
 
-func (client*Client) LPop(listKey string) (string, error) {
-	return client.pop("lpop", listKey)
+func (client*Client) LPop(key string) (string, error) {
+	return client.pop("lpop", key)
 }
 
-func (client*Client) RPop(listKey string) (string, error) {
-	return client.pop("rpop", listKey)
+func (client*Client) RPop(key string) (string, error) {
+	return client.pop("rpop", key)
 }
 
-func (client*Client) push(method string, listKey string, value string) error {
+func (client*Client) push(method string, key string, value string) error {
 
-	url := fmt.Sprintf("/lists?op=%s&listKey=%s&value=%s",method, listKey, value)
+	url := fmt.Sprintf("/lists?op=%s&key=%s&value=%s",method, key, value)
 
 	resp, err := client.doRequest(http.MethodPost, url, nil)
 
@@ -253,9 +253,9 @@ func (client*Client) push(method string, listKey string, value string) error {
 	return nil
 }
 
-func (client* Client) pop(method string, listKey string) (string, error) {
+func (client* Client) pop(method string, key string) (string, error) {
 
-	url := fmt.Sprintf("/lists?op=%s&listKey=%s", method, listKey)
+	url := fmt.Sprintf("/lists?op=%s&key=%s", method, key)
 	resp, err := client.doRequest(http.MethodPost, url, nil)
 
 	if (err != nil){
@@ -294,8 +294,8 @@ func readCsv(body io.Reader) ([]string, error) {
 
 //------- HASH -----------
 
-func (client* Client) HGet(hashKey string, key string) (string, error) {
-	url := fmt.Sprintf("/hashes?hashKey=%s&key=%s", hashKey, key)
+func (client* Client) HGet(key string, hashKey string) (string, error) {
+	url := fmt.Sprintf("/hashes?key=%s&hashKey=%s", key, hashKey)
 
 	resp, err := client.doRequest(http.MethodGet, url, nil)
 
@@ -325,8 +325,8 @@ func (client* Client) HGet(hashKey string, key string) (string, error) {
 	return string(content), nil
 }
 
-func (client* Client) HSet(hashKey string, key string, value string) error  {
-	url := fmt.Sprintf("/hashes?hashKey=%s&key=%s&value=%s", hashKey, key, value)
+func (client* Client) HSet(key string, hashKey string, value string) error  {
+	url := fmt.Sprintf("/hashes?key=%s&hashKey=%s&value=%s", key, hashKey, value)
 
 	resp, err := client.doRequest(http.MethodPost, url, nil)
 

@@ -163,9 +163,9 @@ Internally implemented as a linked list
 
 ### Left Push data to list (LPUSH)
 Http method: POST <br/>
-Url: /lists?op=lpush&listKey={listKey}&value={value} <br/>
+Url: /lists?op=lpush&key={key}&value={value} <br/>
 #### Request
-**list** - list name - string - required <br/>
+**key** - key list name - string - required <br/>
 **value** - value to push into the list - string - required <br/>
 
 #### Response                                              
@@ -178,9 +178,9 @@ Url: /lists?op=lpush&listKey={listKey}&value={value} <br/>
 
 ### Right Push data to list (RPUSH)
 Http method: POST <br/>
-Url: /lists?op=rpush&listKey={listKey}&value={value} <br/>
+Url: /lists?op=rpush&key={key}&value={value} <br/>
 #### Request
-**list** - list name - string - required <br/>
+**key** - key list name - string - required <br/>
 **value** - value to push into the list - string - required <br/>
 
 #### Response                                            
@@ -194,10 +194,10 @@ Url: /lists?op=rpush&listKey={listKey}&value={value} <br/>
 
 ### Left Pop data from list (LPOP)
 Http method: POST <br/>
-Url: /lists?op=lpop&listKey={list} <br/>
+Url: /lists?op=lpop&key={key} <br/>
 Pop removes element from the list therefore Http POST is used
 #### Request
-**list** - list name - string - required <br/>
+**key** - key list name - string - required <br/>
 
 #### Response                                            
 | Status Code  |    Meaning     |          Notes       | 
@@ -211,10 +211,10 @@ Pop removes element from the list therefore Http POST is used
 
 ### Right Pop data from list (RPOP)
 Http method: POST <br/>
-Url: /lists?op=rpop&listKey={list} <br/>
+Url: /lists?op=rpop&key={key} <br/>
 Pop removes element from the list therefore Http POST is used
 #### Request
-**list** - list name - string - required <br/>
+**key** - key list name - string - required <br/>
 
 #### Response                                             
 | Status Code  |    Meaning     |          Notes       |  
@@ -228,7 +228,7 @@ Pop removes element from the list therefore Http POST is used
 
 ### Range data from list (LRANGE)
 Http method: GET <br/>
-Url: /lists?op=range&listKey={listKey}&from={from}&to={to} <br/>
+Url: /lists?op=range&key={key}&from={from}&to={to} <br/>
 
 Out of range indexes will not produce an error. If start is larger than the end of the list, an empty list is returned. 
 If stop is larger than the actual end of the list, Redis will treat it like the last element of the list. <br/>
@@ -237,7 +237,7 @@ Note that if you have a list of numbers from 0 to 100, LRANGE list 0 10 will ret
 
 
 #### Request
-**list** - list name - string - required <br/>
+**key** - key list name - string - required <br/>
 **from** - from index in range - int - required <br/>
 **to** - to index in range - int - required <br/>
 
@@ -253,7 +253,11 @@ Note that if you have a list of numbers from 0 to 100, LRANGE list 0 10 will ret
 
 ### Get field of hash (HGET)
 Http method: GET <br/>
-Url: /hashes/key={key}<br/>
+Url: /hashes/key={key}&hashKey={hasKey}<br/>
+
+#### Request
+**key** - key hash name - string - required <br/>
+**hashKey** - hash key field - string - required <br/>
 
 #### Response                                                         
 | Status Code  |    Meaning     |          Notes       |              
@@ -267,7 +271,12 @@ Url: /hashes/key={key}<br/>
 
 ### Set field of hash (HSET)
 Http method: POST <br/>
-Url: /hashes/key={key}&value={value} <br/>
+Url: /hashes/key={key}&hashKey={hasKey}&value={value} <br/>
+
+#### Request
+**key** - key list name - string - required <br/>
+**hashKey** - hash key field - string - required <br/>
+**value** - hash value field - string - required <br/>
 
 #### Response                                              
 | Status Code  |    Meaning     |          Notes       |   

@@ -45,16 +45,16 @@ func (handler *HashesHandler) ServeHTTP(w http.ResponseWriter, req *http.Request
 }
 
 func (handler *HashesHandler) hSetCommand(w http.ResponseWriter, req *http.Request) {
-	key := req.Form.Get(formKey)
+	hashKey := req.Form.Get(formHashKey)
 
-	if (key == "") {
+	if (hashKey == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	hashKey := req.Form.Get(formHashKey)
+	key := req.Form.Get(formKey)
 
-	if (hashKey == "") {
+	if (key == "") {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -66,19 +66,12 @@ func (handler *HashesHandler) hSetCommand(w http.ResponseWriter, req *http.Reque
 
 	}
 
-	handler.Cache.HSet(hashKey, key, value)
+	handler.Cache.HSet(key, hashKey, value)
 
 }
 
 
 func (handler *HashesHandler) hGetQuery(w http.ResponseWriter, req *http.Request) {
-	key := req.Form.Get(formKey)
-
-	if (key == "") {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	hashKey := req.Form.Get(formHashKey)
 
 	if (hashKey == "") {
@@ -86,7 +79,14 @@ func (handler *HashesHandler) hGetQuery(w http.ResponseWriter, req *http.Request
 		return
 	}
 
-	value, err := handler.Cache.HGet(hashKey, key)
+	key := req.Form.Get(formKey)
+
+	if (key == "") {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	value, err := handler.Cache.HGet(key, hashKey)
 
 	if (err != nil) {
 
@@ -96,7 +96,9 @@ func (handler *HashesHandler) hGetQuery(w http.ResponseWriter, req *http.Request
 		}
 
 		if (err == gcache.ErrHashKeyNotFound){
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusNotFound)
+			w.Header().Set("Content-Type", "text/plain")
+			fmt.Fprint(w, "Hash key not found")
 			return
 		}
 

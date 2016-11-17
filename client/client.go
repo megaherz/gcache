@@ -190,6 +190,82 @@ func (client *Client) Keys() ([]string, error) {
 	return result, nil
 }
 
+//------ LIST ---------
+
+func (client*Client) LPush(listKey string, value string) error {
+	return nil
+}
+
+func (client*Client) RPush(listKey string, value string) error {
+	return nil
+}
+
+func (client*Client) LPop(listKey string) (string, error) {
+	return "", nil
+}
+
+func (client*Client) RPop(listKey string) (string, error) {
+	return "", nil
+}
+
+func (client*Client) LRange(listKey string, from int, to int) ([]string, error) {
+	return nil, nil
+}
+
+//------- HASH -----------
+
+func (client* Client) HGet(hashKey string, key string) (string, error) {
+	url := fmt.Sprintf("%s/hashes?hashKey=%s&key=%s", client.addr, hashKey, key)
+
+	resp, err := http.Get(url)
+
+	if (err != nil) {
+		return "", err
+	}
+
+	if (resp.StatusCode == http.StatusNotFound){
+		return "", ErrKeyNotFound
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		return "", ErrServerError
+	}
+
+	if (resp.StatusCode != http.StatusOK) {
+		return "", unexpectedStatusError(resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+	content, err := ioutil.ReadAll(resp.Body)
+
+	if (err != nil) {
+		return "", err
+	}
+
+	return string(content), nil
+}
+
+func (client* Client) HSet(hashKey string, key string, value string) error  {
+	url := fmt.Sprintf("%s/hashes?hashKey=%s&key=%s&value=%s", client.addr, hashKey, key, value)
+
+	resp, err := http.Post(url, "", nil)
+	if (err != nil) {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		return ErrServerError
+	}
+
+	if (resp.StatusCode != http.StatusOK) {
+		return unexpectedStatusError(resp.StatusCode)
+	}
+
+	return nil
+}
+
+
+
 
 
 

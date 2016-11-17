@@ -81,6 +81,29 @@ func TestClient_Keys(t *testing.T) {
 
 }
 
+func TestClient_HSet_HGET(t *testing.T) {
+	const hashKey = "hashKey"
+	const key = "key"
+	const value  = "value"
+
+	client := NewClient(connectionString)
+	err := client.HSet(hashKey, key, value)
+
+	if (err != nil) {
+		t.Errorf("Failed to hset '%s' with key '%s' and value '%s'. Err = %s", hashKey, key, value, err)
+	}
+
+	returnedValue, err := client.HGet(hashKey, key)
+
+	if (err != nil) {
+		t.Error("Failed to get the key", err)
+	}
+
+	if (returnedValue != value) {
+		t.Error("Value", value, "is not equal to returned value", returnedValue)
+	}
+}
+
 func contains(s []string, e string) bool {
 	for _, a := range s {
 		if a == e {
@@ -89,3 +112,4 @@ func contains(s []string, e string) bool {
 	}
 	return false
 }
+

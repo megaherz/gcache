@@ -1,16 +1,16 @@
 package handlers
 
 import (
-	"net/http"
-	"gcache"
-	"encoding/csv"
 	"bytes"
+	"encoding/csv"
+	"gcache"
+	"net/http"
 	"strings"
 )
 
 type Handler interface {
 	http.Handler
-	Init(cache * gcache.Cache) Handler
+	Init(cache *gcache.Cache) Handler
 }
 
 func serialize(items []interface{}) (string, error) {

@@ -1,18 +1,18 @@
 package handlers
 
 import (
-	"testing"
-	"net/http/httptest"
-	"net/http"
 	"gcache"
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 )
 
 func TestHashesHandler_HSetGSet(t *testing.T) {
 
-	const key  = "key"
-	const hashKey  = "hashKey"
-	const value  = "value"
+	const key = "key"
+	const hashKey = "hashKey"
+	const value = "value"
 
 	handler := new(HashesHandler).Init(gcache.NewCache())
 
@@ -23,7 +23,7 @@ func TestHashesHandler_HSetGSet(t *testing.T) {
 
 	rr, err := http.Post(url, "", nil)
 
-	if (err != nil){
+	if err != nil {
 		t.Fatalf("http.Get(%q) unexpected error: %v", url, err)
 	}
 
@@ -37,7 +37,7 @@ func TestHashesHandler_HSetGSet(t *testing.T) {
 
 	rr, err = http.Get(url)
 
-	if (err != nil){
+	if err != nil {
 		t.Fatalf("http.Get(%q) unexpected error: %v", url, err)
 	}
 

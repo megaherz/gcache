@@ -1,9 +1,9 @@
 package client
 
 import (
-	"testing"
 	"log"
 	"strconv"
+	"testing"
 )
 
 const connectionString string = "http://localhost:8080"
@@ -16,23 +16,23 @@ func TestClient_SetGetDel(t *testing.T) {
 	client := NewClient(connectionString)
 	err := client.Set(key, value, 5)
 
-	if (err != nil) {
+	if err != nil {
 		t.Error("Failed to set the key", err)
 	}
 
 	returnedValue, err := client.Get(key)
 
-	if (err != nil) {
+	if err != nil {
 		t.Error("Failed to get the key", err)
 	}
 
-	if (returnedValue != value) {
+	if returnedValue != value {
 		t.Error("Set value", value, "is not equal to returned value", returnedValue)
 	}
 
 	err = client.Del(key)
 
-	if (err != nil) {
+	if err != nil {
 		t.Error("Failed to delete the key", err)
 	}
 }
@@ -45,35 +45,35 @@ func TestClient_Keys(t *testing.T) {
 	const key1 = "key1"
 	const key2 = "key2"
 
-	if (err != nil) {
+	if err != nil {
 		t.Error("Failed to get keys", err)
 	}
 
-	if (len(keys) != 0) {
+	if len(keys) != 0 {
 		t.Error("There should be no keys")
 	}
 
 	// Insert key1
 	err = client.Set(key1, "value", 5)
 
-	if (err != nil) {
+	if err != nil {
 		t.Error("Failed to set the key1", err)
 	}
 
 	// Insert key2
 	err = client.Set(key2, "value", 5)
 
-	if (err != nil) {
+	if err != nil {
 		t.Error("Failed to set the key2", err)
 	}
 
 	keys, err = client.Keys()
 
-	if (err != nil) {
+	if err != nil {
 		t.Error("Failed to get keys", err)
 	}
 
-	if (len(keys) != 2) {
+	if len(keys) != 2 {
 		t.Error("There should be only one keys")
 	}
 
@@ -91,17 +91,17 @@ func TestClient_HSet_HGET(t *testing.T) {
 	client := NewClient(connectionString)
 	err := client.HSet(hashKey, key, value)
 
-	if (err != nil) {
+	if err != nil {
 		t.Errorf("Failed to hset '%s' with key '%s' and value '%s'. Err = %s", hashKey, key, value, err)
 	}
 
 	returnedValue, err := client.HGet(hashKey, key)
 
-	if (err != nil) {
+	if err != nil {
 		t.Error("Failed to get the key", err)
 	}
 
-	if (returnedValue != value) {
+	if returnedValue != value {
 		t.Error("Value", value, "is not equal to returned value", returnedValue)
 	}
 }
@@ -114,14 +114,14 @@ func TestClient_LRange(t *testing.T) {
 	// LPUSH 10 items
 	for i := 0; i < 10; i++ {
 		err := client.LPush(listKey, strconv.Itoa(i))
-		if (err != nil) {
+		if err != nil {
 			t.Errorf("Failed to lpush. ListKey = '%s'. Error = %s", listKey, err)
 		}
 	}
 
 	values, err := client.LRange(listKey, 2, 4)
 
-	if (err != nil) {
+	if err != nil {
 		t.Fatalf("LRange failed. Err = %s", err)
 	}
 
@@ -142,4 +142,3 @@ func contains(s []string, e string) bool {
 	}
 	return false
 }
-

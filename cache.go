@@ -1,13 +1,13 @@
 package gcache
 
 import (
-	"time"
-	"errors"
-	"sync"
 	"container/heap"
 	"container/list"
-	"runtime"
+	"errors"
 	"fmt"
+	"runtime"
+	"sync"
+	"time"
 )
 
 const DefaultEvictionInterval time.Duration = 1 * time.Second
@@ -47,8 +47,8 @@ func (pq *priorityQueue) Push(x interface{}) {
 func (pq *priorityQueue) Pop() interface{} {
 	a := *pq
 	n := len(a)
-	item := a[n - 1]
-	*pq = a[0 : n - 1]
+	item := a[n-1]
+	*pq = a[0 : n-1]
 	return item
 }
 
@@ -63,11 +63,11 @@ type Cache struct {
 	mutex sync.RWMutex
 }
 
-func (c*Cache) getItem(key string) (*item, bool) {
+func (c *Cache) getItem(key string) (*item, bool) {
 	if item, ok := c.items[key]; ok {
 		expired := item.expireAt.Before(time.Now())
 
-		if (expired) {
+		if expired {
 			return nil, false
 		}
 
@@ -77,7 +77,7 @@ func (c*Cache) getItem(key string) (*item, bool) {
 }
 
 // Evict expired items from the cache
-func (c*Cache) evict() {
+func (c *Cache) evict() {
 
 	now := time.Now()
 
@@ -85,7 +85,7 @@ func (c*Cache) evict() {
 
 		item := c.pq.Peek().(*item)
 
-		if (item.expireAt.Before(now)) {
+		if item.expireAt.Before(now) {
 			heap.Pop(c.pq)
 			delete(c.items, item.key)
 		} else {
@@ -96,7 +96,7 @@ func (c*Cache) evict() {
 
 // Get the value of key.
 // If the key does not exist the special value nil is returned
-func (c*Cache) Get(key string) (interface{}, error) {
+func (c *Cache) Get(key string) (interface{}, error) {
 	c.mutex.RLock()
 	if item, ok := c.getItem(key); ok {
 		c.mutex.RUnlock()
@@ -118,7 +118,7 @@ func (c *Cache) Count() int {
 }
 
 // Get the Tll (Time to live) of the key
-func (c*Cache) Ttl(key string) (time.Duration, error) {
+func (c *Cache) Ttl(key string) (time.Duration, error) {
 	c.mutex.RLock()
 	item, exists := c.getItem(key)
 	if !exists {
@@ -132,22 +132,22 @@ func (c*Cache) Ttl(key string) (time.Duration, error) {
 
 // Set key to hold the value.
 // If key already holds a value, it is overwritten, regardless of its type.
-func (c*Cache) Set(key string, value interface{}, ttl time.Duration) {
+func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
 	c.mutex.Lock()
 	c.set(key, value, ttl)
 	c.mutex.Unlock()
 }
 
-func (c*Cache) set(key string, value interface{}, ttl time.Duration) {
+func (c *Cache) set(key string, value interface{}, ttl time.Duration) {
 
 	c.evict()
 
 	expireAt := time.Now().Add(ttl)
 
 	item := &item{
-		key: key,
-		value: value,
-		ttl: ttl,
+		key:      key,
+		value:    value,
+		ttl:      ttl,
 		expireAt: expireAt,
 	}
 
@@ -157,7 +157,7 @@ func (c*Cache) set(key string, value interface{}, ttl time.Duration) {
 }
 
 // Update the value of the key
-func (c*Cache) Update(key string, value interface{}) error {
+func (c *Cache) Update(key string, value interface{}) error {
 	c.mutex.Lock()
 	item, exists := c.getItem(key)
 	if !exists {
@@ -172,7 +172,7 @@ func (c*Cache) Update(key string, value interface{}) error {
 }
 
 // Update the value of the key as well as TTL (Time to live)
-func (c*Cache) UpdateWithTll(key string, value interface{}, ttl time.Duration) error {
+func (c *Cache) UpdateWithTll(key string, value interface{}, ttl time.Duration) error {
 
 	c.mutex.Lock()
 	_, exists := c.getItem(key)
@@ -188,7 +188,7 @@ func (c*Cache) UpdateWithTll(key string, value interface{}, ttl time.Duration) e
 }
 
 // Delete the value of the key
-func (c*Cache) Del(key string) (err error) {
+func (c *Cache) Del(key string) (err error) {
 
 	c.mutex.Lock()
 	if _, ok := c.getItem(key); ok {
@@ -203,7 +203,7 @@ func (c*Cache) Del(key string) (err error) {
 }
 
 // Return all keys in the cache
-func (c*Cache) Keys() ([]string) {
+func (c *Cache) Keys() []string {
 
 	c.mutex.Lock()
 	c.evict()
@@ -221,19 +221,19 @@ func (c*Cache) Keys() ([]string) {
 // ====== LIST ======
 
 // Left push value into the list
-func (c*Cache) LPush(key string, value interface{}) error {
+func (c *Cache) LPush(key string, value interface{}) error {
 
-	return c.listPush(key, value, func(l *list.List)  {
+	return c.listPush(key, value, func(l *list.List) {
 		l.PushBack(value)
 	})
 }
 
-func (c*Cache) listPush(key string, value interface{}, push func(l *list.List)) error {
+func (c *Cache) listPush(key string, value interface{}, push func(l *list.List)) error {
 	c.mutex.Lock()
 
 	if item, ok := c.getItem(key); ok {
 		l, ok := item.value.(*list.List)
-		if (!ok){
+		if !ok {
 			c.mutex.Unlock()
 			return fmt.Errorf("Given '%s' is not a list key", key)
 		}
@@ -251,12 +251,12 @@ func (c*Cache) listPush(key string, value interface{}, push func(l *list.List)) 
 	return nil
 }
 
-func (c*Cache) listPop(key string, pop func(l *list.List) interface{}) (interface{}, error) {
+func (c *Cache) listPop(key string, pop func(l *list.List) interface{}) (interface{}, error) {
 	c.mutex.RLock()
 
 	if item, ok := c.getItem(key); ok {
 		l, ok := item.value.(*list.List)
-		if (!ok){
+		if !ok {
 			c.mutex.RUnlock()
 			return nil, fmt.Errorf("Given %s is not a list key", key)
 		}
@@ -273,15 +273,15 @@ func (c*Cache) listPop(key string, pop func(l *list.List) interface{}) (interfac
 }
 
 // Right push value into the list
-func (c*Cache) RPush(key string, value interface{}) error {
+func (c *Cache) RPush(key string, value interface{}) error {
 
-	return c.listPush(key, value, func(l *list.List)  {
+	return c.listPush(key, value, func(l *list.List) {
 		l.PushFront(value)
 	})
 }
 
 // Left pop value from the list
-func (c*Cache) LPop(key string) (interface{}, error) {
+func (c *Cache) LPop(key string) (interface{}, error) {
 
 	return c.listPop(key, func(l *list.List) interface{} {
 		elem := l.Back()
@@ -291,7 +291,7 @@ func (c*Cache) LPop(key string) (interface{}, error) {
 }
 
 // Right pop vaues from the list
-func (c*Cache) RPop(key string)  (interface{}, error)  {
+func (c *Cache) RPop(key string) (interface{}, error) {
 
 	return c.listPop(key, func(l *list.List) interface{} {
 		elem := l.Front()
@@ -301,13 +301,13 @@ func (c*Cache) RPop(key string)  (interface{}, error)  {
 }
 
 // Returns a range of values from the list
-func (c*Cache) LRange(key string, from int, to int)  ([]interface{}, error)  {
+func (c *Cache) LRange(key string, from int, to int) ([]interface{}, error) {
 
 	c.mutex.RLock()
 
 	if item, ok := c.getItem(key); ok {
 		l, ok := item.value.(*list.List)
-		if (!ok){
+		if !ok {
 			c.mutex.RUnlock()
 			return nil, fmt.Errorf("Given '%s' is not a list key", key)
 		}
@@ -316,11 +316,11 @@ func (c*Cache) LRange(key string, from int, to int)  ([]interface{}, error)  {
 		result := make([]interface{}, 0)
 
 		for e := l.Front(); e != nil; e = e.Next() {
-			if (index >= from && index <= to) {
+			if index >= from && index <= to {
 				result = append(result, e.Value)
 			}
 
-			index ++
+			index++
 		}
 
 		c.mutex.RUnlock()
@@ -335,12 +335,12 @@ func (c*Cache) LRange(key string, from int, to int)  ([]interface{}, error)  {
 
 // ====== HASH ======
 
-func (c*Cache) HSet(key string, hashKey string, value interface{}) error {
+func (c *Cache) HSet(key string, hashKey string, value interface{}) error {
 	c.mutex.Lock()
 
 	if item, ok := c.getItem(key); ok {
 		hash, ok := item.value.(map[string]interface{})
-		if (!ok){
+		if !ok {
 			c.mutex.Unlock()
 			return fmt.Errorf("Given %s is not a hash key", key)
 		}
@@ -357,19 +357,19 @@ func (c*Cache) HSet(key string, hashKey string, value interface{}) error {
 	return nil
 }
 
-func (c*Cache) HGet(key string, hashKey string) (interface{}, error) {
+func (c *Cache) HGet(key string, hashKey string) (interface{}, error) {
 
 	c.mutex.RLock()
 
 	if item, ok := c.getItem(key); ok {
 		hash, ok := item.value.(map[string]interface{})
-		if (!ok){
+		if !ok {
 			c.mutex.RUnlock()
 			return nil, fmt.Errorf("Given '%s' is not a hash key", key)
 		}
 
 		value, ok := hash[hashKey]
-		if (!ok) {
+		if !ok {
 			c.mutex.RUnlock()
 			return nil, ErrHashKeyNotFound
 		}
@@ -413,8 +413,8 @@ func NewCache() *Cache {
 	heap.Init(&pq)
 
 	cache := &Cache{
-		items:make(map[string]*item),
-		pq: &pq,
+		items: make(map[string]*item),
+		pq:    &pq,
 	}
 
 	// Schedule eviction execution on interval

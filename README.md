@@ -310,7 +310,6 @@ Result: <br />
 BenchmarkCache_SetGet-4   |   1000000   |     2032 ns/op
 
 ##TODO
-* Validation that a key does not contain whitespaces
 * Multiple set and get support on hashes
 
 

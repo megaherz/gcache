@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"net/http"
+	"fmt"
 	"gcache"
 	"log"
+	"net/http"
 	"strconv"
-	"fmt"
 )
 
 const (
-	formRangeTo = "to"
+	formRangeTo   = "to"
 	formRangeFrom = "from"
 	formOperation = "op"
 )
@@ -43,16 +43,16 @@ func (handler *ListsHandler) ServeHTTP(w http.ResponseWriter, req *http.Request)
 
 	case http.MethodPost:
 
-		if (operation == "lpush") {
+		if operation == "lpush" {
 			handler.lPushCommand(w, req)
 			return
-		} else if (operation == "rpush") {
+		} else if operation == "rpush" {
 			handler.rPushCommand(w, req)
 			return
-		} else if (operation ==  "lpop") {
+		} else if operation == "lpop" {
 			handler.lPopCommand(w, req)
 			return
-		} else if (operation == "rpop") {
+		} else if operation == "rpop" {
 			handler.rPopCommand(w, req)
 			return
 		}
@@ -65,28 +65,28 @@ func (handler *ListsHandler) ServeHTTP(w http.ResponseWriter, req *http.Request)
 func (handler *ListsHandler) rangeQuery(w http.ResponseWriter, req *http.Request) {
 
 	key := req.Form.Get(formKey)
-	if (key == "") {
+	if key == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	from, err := strconv.Atoi(req.Form.Get(formRangeFrom))
-	if (err != nil) {
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	to, err := strconv.Atoi(req.Form.Get(formRangeTo))
-	if (err != nil) {
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	items, err := handler.Cache.LRange(key, from, to)
 
-	if (err != nil) {
+	if err != nil {
 
-		if (err == gcache.ErrKeyNotFound) {
+		if err == gcache.ErrKeyNotFound {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
@@ -99,7 +99,7 @@ func (handler *ListsHandler) rangeQuery(w http.ResponseWriter, req *http.Request
 	// Serialize items to string
 	serialized, err := serialize(items)
 
-	if (err != nil) {
+	if err != nil {
 		log.Printf("rangeQuery. Failed to serialize items %s", items)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -111,21 +111,20 @@ func (handler *ListsHandler) rangeQuery(w http.ResponseWriter, req *http.Request
 func (handler *ListsHandler) lPushCommand(w http.ResponseWriter, req *http.Request) {
 
 	key := req.Form.Get(formKey)
-	if (key == "") {
+	if key == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	value := req.Form.Get(formValue)
-	if (value == "") {
+	if value == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	err := handler.Cache.LPush(key, value)
 
-
-	if (err != nil) {
+	if err != nil {
 		fmt.Fprint(w, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -135,39 +134,39 @@ func (handler *ListsHandler) lPushCommand(w http.ResponseWriter, req *http.Reque
 func (handler *ListsHandler) rPushCommand(w http.ResponseWriter, req *http.Request) {
 
 	key := req.Form.Get(formKey)
-	if (key == "") {
+	if key == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	value := req.Form.Get(formValue)
-	if (value == "") {
+	if value == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	err := handler.Cache.RPush(key, value)
 
-	if (err != nil) {
+	if err != nil {
 		fmt.Fprint(w, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
 
-func (handler *ListsHandler)  lPopCommand(w http.ResponseWriter, req *http.Request) {
+func (handler *ListsHandler) lPopCommand(w http.ResponseWriter, req *http.Request) {
 
 	key := req.Form.Get(formKey)
-	if (key == "") {
+	if key == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	value, err := handler.Cache.LPop(key)
 
-	if (err != nil) {
+	if err != nil {
 
-		if (err == gcache.ErrKeyNotFound) {
+		if err == gcache.ErrKeyNotFound {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
@@ -180,19 +179,19 @@ func (handler *ListsHandler)  lPopCommand(w http.ResponseWriter, req *http.Reque
 	fmt.Fprint(w, value)
 }
 
-func (handler *ListsHandler)  rPopCommand(w http.ResponseWriter, req *http.Request) {
+func (handler *ListsHandler) rPopCommand(w http.ResponseWriter, req *http.Request) {
 
 	key := req.Form.Get(formKey)
-	if (key == "") {
+	if key == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	value, err := handler.Cache.RPop(key)
 
-	if (err != nil) {
+	if err != nil {
 
-		if (err == gcache.ErrKeyNotFound) {
+		if err == gcache.ErrKeyNotFound {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}

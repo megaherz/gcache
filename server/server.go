@@ -1,19 +1,19 @@
 package server
 
 import (
-	"net/http"
-	"log"
+	"fmt"
 	"gcache"
 	"gcache/server/handlers"
-	"fmt"
+	"log"
+	"net/http"
 )
 
-const headerAuthorization  = "Authorization"
+const headerAuthorization = "Authorization"
 
 type Server struct {
-	cache *gcache.Cache
+	cache             *gcache.Cache
 	urlLoggingEnabled bool
-	pws string
+	pws               string
 }
 
 func (s *Server) Run(addr string) {
@@ -26,11 +26,10 @@ func (s *Server) Run(addr string) {
 	s.middleware("/lists", listsHandler)
 	s.middleware("/hashes", hashesHandler)
 
-
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
-func (s *Server) middleware(route string, handler handlers.Handler){
+func (s *Server) middleware(route string, handler handlers.Handler) {
 	handleFunc := s.urlLoggingHandler(s.authHandler(handler)).ServeHTTP
 	http.HandleFunc(route, handleFunc)
 }
@@ -43,23 +42,23 @@ func NewServer() *Server {
 func NewServerWithAuth(pws string) *Server {
 	return &Server{
 		cache: gcache.NewCache(),
-		pws: pws,
+		pws:   pws,
 	}
 }
 
-func (s *Server) SetUrlLogging(enabled bool)  {
+func (s *Server) SetUrlLogging(enabled bool) {
 	s.urlLoggingEnabled = true
 }
 
 // Authentication handler
-func (s *Server) authHandler(h http.Handler) http.Handler{
+func (s *Server) authHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if (s.pws != "") {
+		if s.pws != "" {
 
 			psw := r.Header.Get(headerAuthorization)
 
-			if (psw != s.pws) {
+			if psw != s.pws {
 
 				w.WriteHeader(http.StatusUnauthorized)
 				return

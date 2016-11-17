@@ -1,23 +1,23 @@
 package handlers
 
 import (
-	"net/http"
-	"log"
-	"gcache"
 	"fmt"
-	"time"
+	"gcache"
+	"log"
+	"net/http"
 	"strconv"
+	"time"
 )
 
-const  (
+const (
 	formTtl = "ttl"
 )
 
 type KeysHandler struct {
-   Cache *gcache.Cache
+	Cache *gcache.Cache
 }
 
-func (handler *KeysHandler) Init(cache * gcache.Cache) Handler {
+func (handler *KeysHandler) Init(cache *gcache.Cache) Handler {
 	return &KeysHandler{
 		Cache: cache,
 	}
@@ -31,9 +31,9 @@ func (handler *KeysHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	}
 
 	// Keys
-	if (len(req.Form) == 0 && req.Method == http.MethodGet) {
+	if len(req.Form) == 0 && req.Method == http.MethodGet {
 		handler.keysQuery(w, req)
-		return;
+		return
 	}
 
 	switch req.Method {
@@ -53,7 +53,6 @@ func (handler *KeysHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 		handler.updateCommand(w, req)
 		return
 
-
 	// Delete
 	case http.MethodDelete:
 		handler.removeCommand(w, req)
@@ -71,7 +70,7 @@ func (handler *KeysHandler) keysQuery(w http.ResponseWriter, req *http.Request) 
 	// Serialize keys to string
 	serialized, err := serializeStrings(keys)
 
-	if (err != nil) {
+	if err != nil {
 		log.Printf("keysQuery. Failed to serialize keys %s", keys)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -80,23 +79,23 @@ func (handler *KeysHandler) keysQuery(w http.ResponseWriter, req *http.Request) 
 	fmt.Fprint(w, serialized)
 }
 
-func (handler *KeysHandler) getKeyQuery(w http.ResponseWriter, req *http.Request){
+func (handler *KeysHandler) getKeyQuery(w http.ResponseWriter, req *http.Request) {
 
 	key := req.Form.Get(formKey)
 
-	if (key == "") {
+	if key == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	value, err := handler.Cache.Get(key)
 
-	if (err == gcache.ErrKeyNotFound) {
+	if err == gcache.ErrKeyNotFound {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	if (err != nil) {
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -105,32 +104,32 @@ func (handler *KeysHandler) getKeyQuery(w http.ResponseWriter, req *http.Request
 	fmt.Fprint(w, value.(string))
 }
 
-func (handler *KeysHandler) setKeyCommand(w http.ResponseWriter, req *http.Request){
+func (handler *KeysHandler) setKeyCommand(w http.ResponseWriter, req *http.Request) {
 
 	key := req.Form.Get(formKey)
 
-	if (key == "") {
+	if key == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	value := req.Form.Get(formValue)
 
-	if (value == "") {
+	if value == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	strTtl := req.Form.Get(formTtl)
 
-	if (strTtl == "") {
+	if strTtl == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	ttl, err := strconv.Atoi(strTtl)
 
-	if (err != nil) {
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -142,20 +141,19 @@ func (handler *KeysHandler) removeCommand(w http.ResponseWriter, req *http.Reque
 
 	key := req.Form.Get(formKey)
 
-	if (key == "") {
+	if key == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-
 	err := handler.Cache.Del(key)
 
-	if (err == gcache.ErrKeyNotFound) {
+	if err == gcache.ErrKeyNotFound {
 		http.NotFound(w, req)
 		return
 	}
 
-	if (err != nil) {
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -165,21 +163,21 @@ func (handler *KeysHandler) updateCommand(w http.ResponseWriter, req *http.Reque
 
 	key := req.Form.Get(formKey)
 
-	if (key == "") {
+	if key == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	value := req.Form.Get(formValue)
 
-	if (value == "") {
+	if value == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	var err error
 
-	if (req.Form.Get(formTtl) == "") {
+	if req.Form.Get(formTtl) == "" {
 		err = handler.Cache.Update(key, value)
 	} else {
 		ttl, err := strconv.Atoi(req.Form.Get(formTtl))
@@ -191,12 +189,12 @@ func (handler *KeysHandler) updateCommand(w http.ResponseWriter, req *http.Reque
 		err = handler.Cache.UpdateWithTll(key, value, convertIntToDurationInMinutes(ttl))
 	}
 
-	if (err == gcache.ErrKeyNotFound) {
+	if err == gcache.ErrKeyNotFound {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	if (err != nil) {
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

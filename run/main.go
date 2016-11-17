@@ -1,12 +1,11 @@
-
 package main
 
 import (
-	"gcache/server"
-	"os/signal"
-	"os"
-	"syscall"
 	"flag"
+	"gcache/server"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {

@@ -1,10 +1,10 @@
 package gcache
 
 import (
+	"log"
+	"strconv"
 	"testing"
 	"time"
-	"strconv"
-	"log"
 )
 
 func TestCache_Keys(t *testing.T) {
@@ -16,7 +16,7 @@ func TestCache_Keys(t *testing.T) {
 
 	keys := cache.Keys()
 
-	if (len(keys) != 3) {
+	if len(keys) != 3 {
 		t.Error("Expected is", 3, "but actual is", len(keys))
 	}
 }
@@ -27,15 +27,14 @@ func TestCache_Get(t *testing.T) {
 	key := "key1"
 
 	cache := NewCache()
- 	cache.Set(key, value, 5 * time.Second)
+	cache.Set(key, value, 5*time.Second)
 	returnedValue, err := cache.Get(key)
 
-
-	if (err == ErrKeyNotFound) {
-		t.Error("Value with key", key, "does not exist" )
+	if err == ErrKeyNotFound {
+		t.Error("Value with key", key, "does not exist")
 	}
 
-	if (value != returnedValue) {
+	if value != returnedValue {
 		t.Error("Expected value", value, "is not equal to", returnedValue)
 	}
 }
@@ -47,13 +46,13 @@ func TestCache_Del(t *testing.T) {
 	cache.Set(key, "value", time.Second)
 	err := cache.Del(key)
 
-	if (len(cache.Keys()) != 0 || err != nil) {
+	if len(cache.Keys()) != 0 || err != nil {
 		t.Error("The key has not been removed")
 	}
 
 	err = cache.Del(key)
 
-	if (err != ErrKeyNotFound) {
+	if err != ErrKeyNotFound {
 		t.Error("The key still exists in Cache")
 	}
 
@@ -65,11 +64,11 @@ func TestCache_Update(t *testing.T) {
 	expectedValue := "expected"
 
 	cache := NewCache()
-	cache.Set(key, "value", 10 * time.Microsecond)
+	cache.Set(key, "value", 10*time.Microsecond)
 
 	err := cache.Update(key, expectedValue)
 
-	if (err != nil) {
+	if err != nil {
 		t.Error("Failed to update")
 	}
 
@@ -86,11 +85,11 @@ func TestCache_UpdateWithTll(t *testing.T) {
 	expectedValue := "expected"
 
 	cache := NewCache()
-	cache.Set(key, "value", 10 * time.Microsecond)
+	cache.Set(key, "value", 10*time.Microsecond)
 
 	err := cache.UpdateWithTll(key, expectedValue, expectedTtl)
 
-	if (err != nil) {
+	if err != nil {
 		t.Error("Failed to update")
 	}
 
@@ -113,13 +112,13 @@ func TestCache_Expiration(t *testing.T) {
 	key := "key1"
 
 	cache := NewCache()
-	cache.Set(key, "value", 10 * time.Microsecond)
+	cache.Set(key, "value", 10*time.Microsecond)
 
 	time.Sleep(time.Second)
 
-	_, err :=  cache.Get(key)
+	_, err := cache.Get(key)
 
-	if (err != ErrKeyNotFound) {
+	if err != ErrKeyNotFound {
 		t.Error("The key has not been expired")
 	}
 
@@ -128,13 +127,13 @@ func TestCache_Expiration(t *testing.T) {
 func TestCache_ParallelGetUpdate(t *testing.T) {
 	cache := NewCache()
 
-	cache.Set("key", 0, time.Second * 10)
+	cache.Set("key", 0, time.Second*10)
 
 	done := make(chan bool)
 
 	// Get
 	go func() {
-		for i:= 0; i < 100; i++ {
+		for i := 0; i < 100; i++ {
 			value, _ := cache.Get("key")
 			t.Log("Value", value)
 		}
@@ -144,8 +143,8 @@ func TestCache_ParallelGetUpdate(t *testing.T) {
 
 	// Set
 	go func() {
-		for i:= 0; i < 100; i++ {
-			cache.Update("key", i * 100)
+		for i := 0; i < 100; i++ {
+			cache.Update("key", i*100)
 		}
 
 		done <- true
@@ -160,8 +159,8 @@ func TestCache_Eviction(t *testing.T) {
 
 	cache := NewCache()
 
-	for i:= 0; i < 100; i++ {
-		cache.Set("key" + string(i), "val", 1 * time.Second)
+	for i := 0; i < 100; i++ {
+		cache.Set("key"+string(i), "val", 1*time.Second)
 	}
 
 	count := cache.Count()
@@ -172,7 +171,7 @@ func TestCache_Eviction(t *testing.T) {
 
 	count = cache.Count()
 
-	if (count != 0) {
+	if count != 0 {
 		t.Error("Count should be 0. There are ", count, "items which have not been evicted")
 	}
 
@@ -180,20 +179,20 @@ func TestCache_Eviction(t *testing.T) {
 
 func TestCache_LPush_LPop(t *testing.T) {
 
-	const key  = "list"
-	const value  = "value"
+	const key = "list"
+	const value = "value"
 
 	cache := NewCache()
 
 	err := cache.LPush(key, value)
 
-	if (err != nil) {
+	if err != nil {
 		t.Fatal("Failed to push value into the list")
 	}
 
 	returnedValue, err := cache.LPop(key)
 
-	if (err != nil) {
+	if err != nil {
 		t.Fatal("Failed to pop value from the list")
 	}
 
@@ -204,20 +203,20 @@ func TestCache_LPush_LPop(t *testing.T) {
 
 func TestCache_RPush_RPop(t *testing.T) {
 
-	const key  = "list"
-	const value  = "value"
+	const key = "list"
+	const value = "value"
 
 	cache := NewCache()
 
 	err := cache.RPush(key, value)
 
-	if (err != nil) {
+	if err != nil {
 		t.Fatal("Failed to push value into the list")
 	}
 
 	returnedValue, err := cache.RPop(key)
 
-	if (err != nil) {
+	if err != nil {
 		t.Fatal("Failed to pop value from the list")
 	}
 
@@ -229,15 +228,15 @@ func TestCache_RPush_RPop(t *testing.T) {
 func TestCache_LRange(t *testing.T) {
 	cache := NewCache()
 
-	const key  = "list"
+	const key = "list"
 
-	for i:= 0; i < 100; i++ {
+	for i := 0; i < 100; i++ {
 		cache.LPush(key, i)
 	}
 
 	values, err := cache.LRange(key, 50, 70)
 
-	if (err != nil) {
+	if err != nil {
 		t.Fatal("Failed to get a range of values from the list")
 	}
 
@@ -246,21 +245,21 @@ func TestCache_LRange(t *testing.T) {
 
 func TestCache_HSet_HGet(t *testing.T) {
 
-	const key  = "list"
-	const listKey  = "list"
-	const value  = "value"
+	const key = "list"
+	const listKey = "list"
+	const value = "value"
 
 	cache := NewCache()
 
 	err := cache.HSet(key, listKey, value)
 
-	if (err != nil) {
+	if err != nil {
 		t.Fatal("Failed to push value into the hash")
 	}
 
 	returnedValue, err := cache.HGet(key, listKey)
 
-	if (err != nil) {
+	if err != nil {
 		t.Fatal("Failed to get value from the hash")
 	}
 
@@ -277,10 +276,10 @@ func BenchmarkCache_SetGet(b *testing.B) {
 
 		key := "key" + strconv.Itoa(n)
 
-		cache.Set(key, "val", 1 * time.Second)
+		cache.Set(key, "val", 1*time.Second)
 		_, err := cache.Get(key)
 
-		if (err != nil){
+		if err != nil {
 			b.Error("Failed to GET", key)
 		}
 	}

@@ -1,19 +1,19 @@
 package handlers
 
 import (
-	"testing"
-	"net/http/httptest"
-	"net/http"
 	"gcache"
 	"io/ioutil"
-	"strconv"
 	"log"
+	"net/http"
+	"net/http/httptest"
+	"strconv"
+	"testing"
 )
 
 func TestKeysHandler_SetGet(t *testing.T) {
 
 	const key = "key1"
-	const value  = "value"
+	const value = "value"
 
 	keysHandler := KeysHandler{
 		Cache: gcache.NewCache(),
@@ -26,7 +26,7 @@ func TestKeysHandler_SetGet(t *testing.T) {
 
 	rr, err := http.Get(url)
 
-	if (err != nil){
+	if err != nil {
 		t.Fatalf("http.Get(%q) unexpected error: %v", url, err)
 	}
 
@@ -39,7 +39,7 @@ func TestKeysHandler_SetGet(t *testing.T) {
 	url = ts.URL + "?key=" + key + "&ttl=5&value=" + value
 	rr, err = http.Post(url, "", nil)
 
-	if (err != nil){
+	if err != nil {
 		t.Fatalf("http.Post(%q) unexpected error: %v", url, err)
 	}
 
@@ -53,7 +53,7 @@ func TestKeysHandler_SetGet(t *testing.T) {
 	url = ts.URL + "?key=" + key + "&value=" + value
 	rr, err = http.Post(url, "", nil)
 
-	if (err != nil){
+	if err != nil {
 		t.Fatalf("http.Post(%q) unexpected error: %v", url, err)
 	}
 
@@ -65,7 +65,7 @@ func TestKeysHandler_SetGet(t *testing.T) {
 
 	rr, err = http.Get(url)
 
-	if (err != nil){
+	if err != nil {
 		t.Fatalf("http.Get(%q) unexpected error: %v", url, err)
 	}
 
@@ -96,7 +96,7 @@ func TestKeysHandler_Keys(t *testing.T) {
 
 	rr, err := http.Get(url)
 
-	if (err != nil){
+	if err != nil {
 		t.Fatalf("http.Get(%q) unexpected error: %v", url, err)
 	}
 
@@ -116,14 +116,14 @@ func TestKeysHandler_Keys(t *testing.T) {
 
 	// Insert some keys
 	const n = 10
-	for i := 0; i < n; i ++ {
+	for i := 0; i < n; i++ {
 		key := strconv.Itoa(i)
-		http.Post(ts.URL + "?key="+ key + "&ttl=5&value=value", "", nil)
+		http.Post(ts.URL+"?key="+key+"&ttl=5&value=value", "", nil)
 	}
 
 	rr, err = http.Get(url)
 
-	if (err != nil){
+	if err != nil {
 		t.Fatalf("http.Get(%q) unexpected error: %v", url, err)
 	}
 
@@ -143,7 +143,7 @@ func TestKeysHandler_Keys(t *testing.T) {
 
 func TestKeysHandler_SetDel(t *testing.T) {
 	const key = "key1"
-	const value  = "value"
+	const value = "value"
 
 	keysHandler := KeysHandler{
 		Cache: gcache.NewCache(),
@@ -155,7 +155,7 @@ func TestKeysHandler_SetDel(t *testing.T) {
 	url := ts.URL + "?key=" + key + "&ttl=5&value=" + value
 	rr, err := http.Post(url, "", nil)
 
-	if (err != nil){
+	if err != nil {
 		t.Fatalf("http.Post(%q) unexpected error: %v", url, err)
 	}
 
@@ -169,7 +169,7 @@ func TestKeysHandler_SetDel(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodDelete, url, nil)
 	rr, err = http.DefaultClient.Do(req)
 
-	if (err != nil){
+	if err != nil {
 		t.Fatalf("http.Post(%q) unexpected error: %v", url, err)
 	}
 

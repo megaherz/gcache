@@ -1,19 +1,19 @@
 package handlers
 
 import (
-	"testing"
-	"gcache"
-	"net/http/httptest"
-	"net/http"
-	"io/ioutil"
 	"fmt"
+	"gcache"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 )
 
 func TestListsHandler_LPush_LPop(t *testing.T) {
 
-	const key  = "listKey"
-	const value  = "value"
+	const key = "listKey"
+	const value = "value"
 
 	handler := new(ListsHandler).Init(gcache.NewCache())
 
@@ -25,7 +25,7 @@ func TestListsHandler_LPush_LPop(t *testing.T) {
 
 	rr, err := http.Post(url, "", nil)
 
-	if (err != nil){
+	if err != nil {
 		t.Fatalf("http.Post(%q) unexpected error: %v", url, err)
 	}
 
@@ -40,7 +40,7 @@ func TestListsHandler_LPush_LPop(t *testing.T) {
 
 	rr, err = http.Post(url, "", nil)
 
-	if (err != nil){
+	if err != nil {
 		t.Fatalf("http.Post(%q) unexpected error: %v", url, err)
 	}
 
@@ -63,7 +63,7 @@ func TestListsHandler_LPush_LPop(t *testing.T) {
 
 func TestListsHandler_Range(t *testing.T) {
 
-	const key  = "key"
+	const key = "key"
 
 	handler := new(ListsHandler).Init(gcache.NewCache())
 
@@ -74,7 +74,7 @@ func TestListsHandler_Range(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		url := fmt.Sprintf("%s?op=lpush&key=%s&value=%d", ts.URL, key, i)
 		_, err := http.Post(url, "", nil)
-		if (err != nil) {
+		if err != nil {
 			t.Errorf("Failed to lpush %url", url)
 		}
 	}
@@ -83,7 +83,7 @@ func TestListsHandler_Range(t *testing.T) {
 
 	rr, err := http.Get(url)
 
-	if (err != nil){
+	if err != nil {
 		t.Fatalf("http.Get(%q) unexpected error: %v", url, err)
 	}
 

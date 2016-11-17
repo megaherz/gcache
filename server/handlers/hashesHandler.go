@@ -23,7 +23,7 @@ func (handler *HashesHandler) Init(cache * gcache.Cache) Handler {
 	}
 }
 
-func (handler *HashesHandler) Handle(w http.ResponseWriter, req *http.Request) {
+func (handler *HashesHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
 		log.Printf("Error parsing form: %s", err)
 		return

@@ -25,7 +25,7 @@ func (handler *ListsHandler) Init(cache *gcache.Cache) Handler {
 	}
 }
 
-func (handler *ListsHandler) Handle(w http.ResponseWriter, req *http.Request) {
+func (handler *ListsHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	if err := req.ParseForm(); err != nil {
 		log.Printf("Error parsing form: %s", err)

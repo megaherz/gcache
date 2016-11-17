@@ -19,5 +19,6 @@ func main() {
 	}()
 
 	server := server.NewServer()
+	server.SetUrlLogging(true)
 	server.Run(":8080")
 }

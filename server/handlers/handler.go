@@ -9,7 +9,7 @@ import (
 )
 
 type Handler interface {
-	Handle(w http.ResponseWriter, req *http.Request)
+	http.Handler
 	Init(cache * gcache.Cache) Handler
 }
 

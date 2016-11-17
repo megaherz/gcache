@@ -23,6 +23,12 @@ func NewClient (addr string) *Client  {
 	}
 }
 
+func NewClientWithAuth (addr string, psw string) *Client  {
+	return &Client{
+		addr: addr,
+	}
+}
+
 func (client *Client) Get(key string) (string, error) {
 
 	url := client.addr + "/keys?key=" + key

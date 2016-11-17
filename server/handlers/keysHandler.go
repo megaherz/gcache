@@ -23,7 +23,7 @@ func (handler *KeysHandler) Init(cache * gcache.Cache) Handler {
 	}
 }
 
-func (handler *KeysHandler) Handle(w http.ResponseWriter, req *http.Request) {
+func (handler *KeysHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	if err := req.ParseForm(); err != nil {
 		log.Printf("Error parsing form: %s", err)

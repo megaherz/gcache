@@ -6,14 +6,26 @@ import (
 	"testing"
 )
 
+// NOTE, before running the test execute the server.sh script in the run folder.
+// The scripts runs two cache servers on ports 8080 and 8081
+// The 8081 server is run with authentication psw=123
+
 const connectionString string = "http://localhost:8080"
+const connectionStringAuth string = "http://localhost:8081"
 
 func TestClient_SetGetDel(t *testing.T) {
+	setDelGet(NewClient(connectionString), t)
+}
+
+func TestClient_SetGetDel_WithAuth(t *testing.T) {
+	setDelGet(NewClientWithAuth(connectionStringAuth, "123"), t)
+}
+
+func setDelGet(client *Client, t *testing.T) {
 
 	const key = "key"
 	const value = "value"
 
-	client := NewClient(connectionString)
 	err := client.Set(key, value, 5)
 
 	if err != nil {

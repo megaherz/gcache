@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
-go run main.go
+go build
+./run -addr=:8080  & ./run -psw=123 -addr=:8081 && fg
+

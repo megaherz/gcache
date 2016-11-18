@@ -10,7 +10,9 @@ import (
 
 func main() {
 
-	psw := flag.String("pws", "", "authentication password")
+	psw := flag.String("psw", "", "authentication password")
+	addr := flag.String("addr", ":8080", "server address")
+
 	flag.Parse()
 
 	// Exit on Ctrl+C
@@ -23,5 +25,5 @@ func main() {
 
 	server := server.NewServerWithAuth(*psw)
 	server.SetUrlLogging(true)
-	server.Run(":8080")
+	server.Run(*addr)
 }

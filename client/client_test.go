@@ -14,11 +14,22 @@ const connectionString string = "http://localhost:8080"
 const connectionStringAuth string = "http://localhost:8081"
 
 func TestClient_SetGetDel(t *testing.T) {
-	setDelGet(NewClient(connectionString), t)
+	conns := Connections{
+		{connectionString, ""},
+	}
+
+	client := NewClient(conns)
+	setDelGet(client, t)
 }
 
 func TestClient_SetGetDel_WithAuth(t *testing.T) {
-	setDelGet(NewClientWithAuth(connectionStringAuth, "123"), t)
+
+	conns := Connections{
+		{connectionStringAuth, "123"},
+	}
+
+	client := NewClient(conns)
+	setDelGet(client, t)
 }
 
 func setDelGet(client *Client, t *testing.T) {
@@ -51,7 +62,12 @@ func setDelGet(client *Client, t *testing.T) {
 
 func TestClient_Keys(t *testing.T) {
 
-	client := NewClient(connectionString)
+	conns := Connections{
+		{connectionString, ""},
+	}
+
+	client := NewClient(conns)
+
 	keys, err := client.Keys()
 
 	const key1 = "key1"
@@ -100,7 +116,12 @@ func TestClient_HSet_HGET(t *testing.T) {
 	const key = "key"
 	const value = "value"
 
-	client := NewClient(connectionString)
+	conns := Connections{
+		{connectionString, ""},
+	}
+
+	client := NewClient(conns)
+
 	err := client.HSet(hashKey, key, value)
 
 	if err != nil {
@@ -121,7 +142,11 @@ func TestClient_HSet_HGET(t *testing.T) {
 func TestClient_LRange(t *testing.T) {
 	const listKey = "rangelistKey"
 
-	client := NewClient(connectionString)
+	conns := Connections{
+		{connectionString, ""},
+	}
+
+	client := NewClient(conns)
 
 	// LPUSH 10 items
 	for i := 0; i < 10; i++ {

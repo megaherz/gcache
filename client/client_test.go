@@ -78,7 +78,7 @@ func TestClient_Keys(t *testing.T) {
 	}
 
 	if len(keys) != 0 {
-		t.Error("There should be no keys")
+		t.Errorf("There should be no keys, but there are %d keys", len(keys))
 	}
 
 	// Insert key1
@@ -102,7 +102,7 @@ func TestClient_Keys(t *testing.T) {
 	}
 
 	if len(keys) != 2 {
-		t.Error("There should be only one keys")
+		t.Errorf("There should be only one keys, but there are %d keys", len(keys))
 	}
 
 	if !contains(keys, key1) || !contains(keys, key2) {

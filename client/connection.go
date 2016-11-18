@@ -40,13 +40,13 @@ type httpResponse struct {
 	err      error
 }
 
-func (conns Connections) doParallelHttpGets(query string) []*httpResponse {
+func (conns Connections) doParallelGetRequest(query string) []*httpResponse {
 	ch := make(chan *httpResponse)
 	responses := []*httpResponse{}
 
 	for _, conn := range conns {
 		go func(url string) {
-			resp, err := conn.doRequest(http.MethodGet, url + query, nil)
+			resp, err := conn.doRequest(http.MethodGet, url, nil)
 			ch <- &httpResponse{url, resp, err}
 			if err != nil && resp != nil && resp.StatusCode == http.StatusOK {
 				resp.Body.Close()

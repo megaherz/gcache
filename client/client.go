@@ -145,23 +145,23 @@ func (client *Client) Del(key string) error {
 	return nil
 }
 
-func unexpectedStatusError(status int) error {
-	return fmt.Errorf("Unexpected status %d", status)
-}
-
 func (client *Client) Keys() ([]string, error) {
 
-	responses := client.conns.doParallelHttpGets("/keys")
+	responses := client.conns.doParallelGetRequest("/keys")
 
+	// If there are any error, return it
 	for _, resp := range responses {
 		if resp.err != nil {
 			return nil, resp.err
 		}
 	}
 
-	keys := make([]string, 0)
+	// Concatenate keys
+	keys := []string{}
 	for _, resp := range responses {
 		content, err := readCsv(resp.response.Body)
+
+
 		if err != nil {
 			return nil, err
 		}
@@ -169,26 +169,6 @@ func (client *Client) Keys() ([]string, error) {
 	}
 
 	return keys, nil
-}
-
-func keys(conn Connection) ([]string, error) {
-	resp, err := conn.doRequest(http.MethodGet, "/keys", nil)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode == http.StatusInternalServerError {
-		return nil, ErrServerError
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, unexpectedStatusError(resp.StatusCode)
-	}
-
-	defer resp.Body.Close()
-
-	return readCsv(resp.Body)
 }
 
 //------ LIST ---------
@@ -287,6 +267,10 @@ func (client *Client) pop(method string, key string) (string, error) {
 	}
 
 	return string(content), nil
+}
+
+func unexpectedStatusError(status int) error {
+	return fmt.Errorf("Unexpected status %d", status)
 }
 
 func readCsv(body io.Reader) ([]string, error) {

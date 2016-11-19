@@ -43,7 +43,11 @@ func TestClient_SetGetDel_WithAuth(t *testing.T) {
 	test_SetGetDel(client, key, value, t)
 }
 
-func TestClient_SetGetDel_Sharded(t *testing.T) {
+func TestClient_Keys_Sharded(t *testing.T) {
+
+	const n  = 10
+
+	// Two shards
 	conns := Connections{
 		{connectionString, ""},
 		{connectionStringAuth, psw},
@@ -51,9 +55,30 @@ func TestClient_SetGetDel_Sharded(t *testing.T) {
 
 	client := NewClient(conns)
 
-	for i := 0; i < 10; i++ {
-		test_SetGetDel(client, strconv.Itoa(i), "value", t)
+	for i := 0; i < n; i++ {
+		err := client.Set(strconv.Itoa(i), "value", 5)
+
+		if err != nil {
+			t.Error("Failed to set the key", err)
+		}
 	}
+
+	keys, err := client.Keys()
+
+	if err != nil {
+		t.Error("Failed to get keys", err)
+	}
+
+	if len(keys) != n {
+		log.Println("Keys", keys)
+		t.Errorf("There should be %d keys, but there are %d keys", n, len(keys))
+	}
+
+	//Tear down
+	for i := 0; i < n; i++ {
+		client.Del(strconv.Itoa(i))
+	}
+
 }
 
 func test_SetGetDel(client *Client, key string, value string, t *testing.T) {
@@ -118,14 +143,13 @@ func TestClient_Keys(t *testing.T) {
 
 	keys, err = client.Keys()
 
-
 	if err != nil {
 		t.Error("Failed to get keys", err)
 	}
 
 	if len(keys) != 2 {
 		log.Println("Keys", keys)
-		t.Errorf("There should be only one keys, but there are %d keys", len(keys))
+		t.Errorf("There should be '%d' keys, but there are %d keys", 2, len(keys))
 	}
 
 	if !contains(keys, key1) || !contains(keys, key2) {
@@ -137,6 +161,7 @@ func TestClient_Keys(t *testing.T) {
 	client.Del(key2)
 
 }
+
 
 func TestClient_Update(t *testing.T) {
 
@@ -298,7 +323,35 @@ func TestClient_LRange_LPUSH_LPOP(t *testing.T) {
 }
 
 func TestClient_RPush_RPop(t *testing.T) {
-	//TODO://
+
+	const key = "rpushpopkey"
+	const value = "value"
+
+	conns := Connections{
+		{connectionString, ""},
+	}
+
+	client := NewClient(conns)
+
+	// RPush
+	err := client.RPush(key, value)
+	if err != nil {
+		t.Errorf("Failed to RPush. ListKey = '%s'. Error = %s", key, err)
+	}
+
+	// RPop
+	returnedValue, err := client.RPop(key)
+	if err != nil {
+		t.Errorf("Failed to RPop. ListKey = '%s'. Error = %s", key, err)
+	}
+
+	if returnedValue != value {
+		t.Error("Value", value, "is not equal to returned value", returnedValue)
+	}
+
+	// Tear down
+	client.Del(key)
+
 }
 
 func contains(s []string, e string) bool {

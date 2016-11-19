@@ -284,3 +284,24 @@ func BenchmarkCache_SetGet(b *testing.B) {
 		}
 	}
 }
+
+func BenchmarkCache_SetGet_Parallel(b *testing.B) {
+
+	cache := NewCache()
+
+	b.RunParallel(func(pb *testing.PB) {
+
+		for pb.Next() {
+
+			key := strconv.Itoa(time.Now().Nanosecond())
+
+			cache.Set(key, "val", 10*time.Second)
+			_, err := cache.Get(key)
+
+			if err != nil {
+				b.Error("Failed to GET", key)
+			}
+		}
+
+	})
+}

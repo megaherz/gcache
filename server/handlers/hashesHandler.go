@@ -40,7 +40,7 @@ func (handler *HashesHandler) ServeHTTP(w http.ResponseWriter, req *http.Request
 		return
 	}
 
-	// Nothing matched, return bad request
+	// Nothing matched, return Bad request
 	w.WriteHeader(http.StatusBadRequest)
 }
 
@@ -66,7 +66,11 @@ func (handler *HashesHandler) hSetCommand(w http.ResponseWriter, req *http.Reque
 
 	}
 
-	handler.Cache.HSet(key, hashKey, value)
+	err := handler.Cache.HSet(key, hashKey, value)
+
+	if (err != nil) {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
 }
 
@@ -87,26 +91,27 @@ func (handler *HashesHandler) hGetQuery(w http.ResponseWriter, req *http.Request
 
 	value, err := handler.Cache.HGet(key, hashKey)
 
+	w.Header().Set("Content-Type", "text/plain")
+
 	if err != nil {
 
 		if err == gcache.ErrKeyNotFound {
 			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, "Key not found")
 			return
 		}
 
 		if err == gcache.ErrHashKeyNotFound {
 			w.WriteHeader(http.StatusNotFound)
-			w.Header().Set("Content-Type", "text/plain")
 			fmt.Fprint(w, "Hash key not found")
 			return
 		}
 
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 
 	}
 
-	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprint(w, value.(string))
 
 }

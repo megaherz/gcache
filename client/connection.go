@@ -6,14 +6,17 @@ import (
 	"net/http"
 )
 
+// Represent a connection to the cache server
 type Connection struct{
 	addr string
 	psw string
 }
 
+// Set of connections
 type Connections []Connection
 
-func (c Connections) getNode(key string) Connection {
+// Get connection to the shard by the given key
+func (c Connections) getShard(key string) Connection {
 	hash := crc32.ChecksumIEEE([]byte(key))
 	n := hash % uint32(len(c))
 	return c[n]

@@ -10,32 +10,53 @@ import (
 // The scripts runs two cache servers on ports 8080 and 8081
 // The 8081 server is run with authentication psw=123
 
-const connectionString string = "http://localhost:8080"
-const connectionStringAuth string = "http://localhost:8081"
+const (
+	connectionString string = "http://localhost:8080"
+	connectionStringAuth string = "http://localhost:8081"
+	psw string = "123"
+)
 
 func TestClient_SetGetDel(t *testing.T) {
+
+	const key = "key"
+	const value = "value"
+
 	conns := Connections{
 		{connectionString, ""},
 	}
 
 	client := NewClient(conns)
-	setDelGet(client, t)
+	test_SetGetDel(client, key, value, t)
 }
+
 
 func TestClient_SetGetDel_WithAuth(t *testing.T) {
 
+	const key = "key"
+	const value = "value"
+
 	conns := Connections{
-		{connectionStringAuth, "123"},
+		{connectionStringAuth, psw},
 	}
 
 	client := NewClient(conns)
-	setDelGet(client, t)
+	test_SetGetDel(client, key, value, t)
 }
 
-func setDelGet(client *Client, t *testing.T) {
+func TestClient_SetGetDel_Sharded(t *testing.T) {
+	conns := Connections{
+		{connectionString, ""},
+		{connectionStringAuth, psw},
+	}
 
-	const key = "key"
-	const value = "value"
+	client := NewClient(conns)
+
+	for i := 0; i < 10; i++ {
+		test_SetGetDel(client, strconv.Itoa(i), "value", t)
+	}
+}
+
+func test_SetGetDel(client *Client, key string, value string, t *testing.T) {
 
 	err := client.Set(key, value, 5)
 
@@ -97,11 +118,13 @@ func TestClient_Keys(t *testing.T) {
 
 	keys, err = client.Keys()
 
+
 	if err != nil {
 		t.Error("Failed to get keys", err)
 	}
 
 	if len(keys) != 2 {
+		log.Println("Keys", keys)
 		t.Errorf("There should be only one keys, but there are %d keys", len(keys))
 	}
 
@@ -109,11 +132,100 @@ func TestClient_Keys(t *testing.T) {
 		t.Errorf("Keys contains unexpected key. Keys=%s", keys)
 	}
 
+	// Tear down
+	client.Del(key1)
+	client.Del(key2)
+
+}
+
+func TestClient_Update(t *testing.T) {
+
+	const key = "key"
+	const updatedValue = "updated"
+
+	conns := Connections{
+		{connectionString, ""},
+	}
+
+	client := NewClient(conns)
+
+	err := client.Update(key, "value")
+
+	if err == nil {
+		t.Error("Expected: key not found")
+	}
+
+	// Insert key
+	err = client.Set(key, "value", 5)
+
+	if err != nil {
+		t.Error("Failed to set the key", err)
+	}
+
+	err = client.Update(key, updatedValue)
+
+	if (err != nil) {
+		t.Error("Failed to update. Err = ", err)
+	}
+
+	value, err := client.Get(key)
+
+	if value != updatedValue {
+		t.Errorf("Update value '%s' does not equal to returned value '%s'", updatedValue, value)
+	}
+
+	// Tear down
+	client.Del(key)
+
+}
+
+func TestClient_UpdateWithTtl(t *testing.T) {
+
+	const key = "key"
+	const updatedValue = "updated"
+
+	conns := Connections{
+		{connectionString, ""},
+	}
+
+	client := NewClient(conns)
+
+	err := client.UpdateWithTtl(key, "value", 5)
+
+	if err == nil {
+		t.Error("Expected: key not found")
+	}
+
+	// Insert key
+	err = client.Set(key, "value", 5)
+
+	if err != nil {
+		t.Error("Failed to set the key", err)
+	}
+
+	// Update
+	err = client.UpdateWithTtl(key, updatedValue, 25)
+
+	// Assertions
+	if (err != nil) {
+		t.Error("Failed to update. Err = ", err)
+	}
+
+	value, err := client.Get(key)
+
+	if value != updatedValue {
+		t.Errorf("Update value '%s' does not equal to returned value '%s'", updatedValue, value)
+	}
+
+	// Tear down
+	client.Del(key)
+
 }
 
 func TestClient_HSet_HGET(t *testing.T) {
-	const hashKey = "hashKey"
+
 	const key = "key"
+	const hashKey = "hashKey"
 	const value = "value"
 
 	conns := Connections{
@@ -122,13 +234,13 @@ func TestClient_HSet_HGET(t *testing.T) {
 
 	client := NewClient(conns)
 
-	err := client.HSet(hashKey, key, value)
+	err := client.HSet(key, hashKey, value)
 
 	if err != nil {
-		t.Errorf("Failed to hset '%s' with key '%s' and value '%s'. Err = %s", hashKey, key, value, err)
+		t.Errorf("Failed to hset '%s' with hash key '%s' and value '%s'. Err = %s", key, hashKey, value, err)
 	}
 
-	returnedValue, err := client.HGet(hashKey, key)
+	returnedValue, err := client.HGet(key, hashKey)
 
 	if err != nil {
 		t.Error("Failed to get the key", err)
@@ -137,9 +249,12 @@ func TestClient_HSet_HGET(t *testing.T) {
 	if returnedValue != value {
 		t.Error("Value", value, "is not equal to returned value", returnedValue)
 	}
+
+	// Tear down
+	client.Del(key)
 }
 
-func TestClient_LRange(t *testing.T) {
+func TestClient_LRange_LPUSH_LPOP(t *testing.T) {
 	const listKey = "rangelistKey"
 
 	conns := Connections{
@@ -169,6 +284,21 @@ func TestClient_LRange(t *testing.T) {
 			t.Errorf("Values contain unexpected value '%s", value)
 		}
 	}
+
+	// Tear down
+	for i := 0; i < 10; i++ {
+		_, err := client.LPop(listKey)
+		if err != nil {
+			t.Errorf("Failed to lpop. ListKey = '%s'. Error = %s", listKey, err)
+		}
+	}
+
+	// Tear down
+	client.Del(listKey)
+}
+
+func TestClient_RPush_RPop(t *testing.T) {
+	//TODO://
 }
 
 func contains(s []string, e string) bool {

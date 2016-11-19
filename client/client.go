@@ -26,7 +26,7 @@ func NewClient(conns Connections) *Client {
 
 func (client *Client) Get(key string) (string, error) {
 
-	conn := client.conns.getNode(key)
+	conn := client.conns.getShard(key)
 	resp, err := conn.doRequest(http.MethodGet, "/keys?key=" + key, nil)
 
 	if err != nil {
@@ -60,7 +60,7 @@ func (client *Client) Set(key string, value string, ttl int) error {
 
 	url := fmt.Sprintf("/keys?key=%s&value=%s&ttl=%d", key, value, ttl)
 
-	conn := client.conns.getNode(key)
+	conn := client.conns.getShard(key)
 	resp, err := conn.doRequest(http.MethodPost, url, nil)
 	if err != nil {
 		return err
@@ -107,20 +107,20 @@ func (client *Client) updateKey(conn Connection, url string) error {
 }
 
 func (client *Client) Update(key string, value string) error {
-	conn := client.conns.getNode(key)
+	conn := client.conns.getShard(key)
 	url := fmt.Sprintf("/keys?key=%s&value=%s", key, value)
 	return client.updateKey(conn, url)
 }
 
 func (client *Client) UpdateWithTtl(key string, value string, ttl int) error {
-	conn := client.conns.getNode(key)
+	conn := client.conns.getShard(key)
 	url := fmt.Sprintf("/keys?key=%s&value=%s&ttl=%d", key, value, ttl)
 	return client.updateKey(conn, url)
 }
 
 func (client *Client) Del(key string) error {
 
-	conn := client.conns.getNode(key)
+	conn := client.conns.getShard(key)
 
 	url := "/keys?key=" + key
 
@@ -186,7 +186,7 @@ func (client *Client) LRange(key string, from int, to int) ([]string, error) {
 
 	url := fmt.Sprintf("/lists?op=range&key=%s&from=%d&to=%d", key, from, to)
 
-	conn := client.conns.getNode(key)
+	conn := client.conns.getShard(key)
 	resp, err := conn.doRequest(http.MethodGet, url, nil)
 
 	if err != nil {
@@ -222,7 +222,7 @@ func (client *Client) push(method string, key string, value string) error {
 
 	url := fmt.Sprintf("/lists?op=%s&key=%s&value=%s", method, key, value)
 
-	conn := client.conns.getNode(key)
+	conn := client.conns.getShard(key)
 	resp, err := conn.doRequest(http.MethodPost, url, nil)
 
 	if err != nil {
@@ -244,7 +244,7 @@ func (client *Client) pop(method string, key string) (string, error) {
 
 	url := fmt.Sprintf("/lists?op=%s&key=%s", method, key)
 
-	conn := client.conns.getNode(key)
+	conn := client.conns.getShard(key)
 	resp, err := conn.doRequest(http.MethodPost, url, nil)
 
 	if err != nil {
@@ -289,7 +289,7 @@ func readCsv(body io.Reader) ([]string, error) {
 func (client *Client) HGet(key string, hashKey string) (string, error) {
 	url := fmt.Sprintf("/hashes?key=%s&hashKey=%s", key, hashKey)
 
-	conn := client.conns.getNode(key)
+	conn := client.conns.getShard(key)
 	resp, err := conn.doRequest(http.MethodGet, url, nil)
 
 	if err != nil {
@@ -321,7 +321,7 @@ func (client *Client) HGet(key string, hashKey string) (string, error) {
 func (client *Client) HSet(key string, hashKey string, value string) error {
 	url := fmt.Sprintf("/hashes?key=%s&hashKey=%s&value=%s", key, hashKey, value)
 
-	conn := client.conns.getNode(key)
+	conn := client.conns.getShard(key)
 	resp, err := conn.doRequest(http.MethodPost, url, nil)
 
 	if err != nil {

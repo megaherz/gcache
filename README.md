@@ -7,6 +7,7 @@ Redis-similar Cache with REST protocol in Golang
 * Thread safe
 * REST protocol
 * Auth support
+* Client scalability (multiple servers share the key space) 
 * Go client library
 
 ##Example of usage
@@ -313,6 +314,10 @@ BenchmarkCache_SetGet-4   |   1000000   |     2032 ns/op
 
 ##TODO
 * Multiple set and get support on hashes
+* Optimize number of locks since as for now when a new key is inserted the whole cache is blocked
+* Return in response a reason what exactly is not valid on BadRequest(400) 
+* Implement the Ttl method in client. The method should return ttl by the given key
+* More client unit tests
 
 
 

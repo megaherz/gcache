@@ -101,7 +101,7 @@ func (handler *ListsHandler) rangeQuery(w http.ResponseWriter, req *http.Request
 
 	if err != nil {
 		log.Printf("rangeQuery. Failed to serialize items %s", items)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -125,8 +125,7 @@ func (handler *ListsHandler) lPushCommand(w http.ResponseWriter, req *http.Reque
 	err := handler.Cache.LPush(key, value)
 
 	if err != nil {
-		fmt.Fprint(w, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -148,8 +147,7 @@ func (handler *ListsHandler) rPushCommand(w http.ResponseWriter, req *http.Reque
 	err := handler.Cache.RPush(key, value)
 
 	if err != nil {
-		fmt.Fprint(w, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -171,8 +169,7 @@ func (handler *ListsHandler) lPopCommand(w http.ResponseWriter, req *http.Reques
 			return
 		}
 
-		fmt.Fprint(w, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -196,8 +193,7 @@ func (handler *ListsHandler) rPopCommand(w http.ResponseWriter, req *http.Reques
 			return
 		}
 
-		fmt.Fprint(w, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

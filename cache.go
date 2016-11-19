@@ -335,6 +335,7 @@ func (c *Cache) LRange(key string, from int, to int) ([]interface{}, error) {
 
 // ====== HASH ======
 
+// Set a new value into a hash
 func (c *Cache) HSet(key string, hashKey string, value interface{}) error {
 	c.mutex.Lock()
 
@@ -357,6 +358,7 @@ func (c *Cache) HSet(key string, hashKey string, value interface{}) error {
 	return nil
 }
 
+// Get a value from the hash
 func (c *Cache) HGet(key string, hashKey string) (interface{}, error) {
 
 	c.mutex.RLock()

@@ -64,18 +64,19 @@ func (handler *KeysHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 }
 
 func (handler *KeysHandler) keysQuery(w http.ResponseWriter, req *http.Request) {
+
 	keys := handler.Cache.Keys()
-	w.Header().Set("Content-Type", "text/plain")
 
 	// Serialize keys to string
 	serialized, err := serializeStrings(keys)
 
 	if err != nil {
 		log.Printf("keysQuery. Failed to serialize keys %s", keys)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprint(w, serialized)
 }
 
@@ -175,10 +176,20 @@ func (handler *KeysHandler) updateCommand(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	var err error
 
 	if req.Form.Get(formTtl) == "" {
-		err = handler.Cache.Update(key, value)
+		err := handler.Cache.Update(key, value)
+
+		if err == gcache.ErrKeyNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 	} else {
 		ttl, err := strconv.Atoi(req.Form.Get(formTtl))
 		if err != nil || ttl < 0 {
@@ -187,17 +198,19 @@ func (handler *KeysHandler) updateCommand(w http.ResponseWriter, req *http.Reque
 		}
 
 		err = handler.Cache.UpdateWithTll(key, value, convertIntToDurationInMinutes(ttl))
+
+		if err == gcache.ErrKeyNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 	}
 
-	if err == gcache.ErrKeyNotFound {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 }
 
 // Convert int to duration in minutes

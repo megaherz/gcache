@@ -74,7 +74,7 @@ func (s *Server) urlLoggingHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		if s.urlLoggingEnabled {
-			fmt.Println(*r.URL)
+			fmt.Printf("%s %s\n\r", r.Method, (*r.URL).RequestURI())
 		}
 
 		h.ServeHTTP(w, r)

@@ -48,13 +48,13 @@ func (conns Connections) doParallelGetRequest(query string) []*httpResponse {
 	responses := []*httpResponse{}
 
 	for _, conn := range conns {
-		go func(url string) {
+		go func(url string, conn Connection) {
 			resp, err := conn.doRequest(http.MethodGet, url, nil)
 			ch <- &httpResponse{url, resp, err}
 			if err != nil && resp != nil && resp.StatusCode == http.StatusOK {
 				resp.Body.Close()
 			}
-		}(query)
+		}(query, conn)
 	}
 
 	for {

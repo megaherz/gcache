@@ -161,7 +161,6 @@ func (client *Client) Keys() ([]string, error) {
 	for _, resp := range responses {
 		content, err := readCsv(resp.response.Body)
 
-
 		if err != nil {
 			return nil, err
 		}

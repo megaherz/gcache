@@ -249,6 +249,18 @@ func TestCache_LRange(t *testing.T) {
 		t.Errorf("Expected %d but actual %d", len(values), 0)
 	}
 
+	// Act equal to and from
+	values, err = cache.LRange(key, from, from)
+
+	if err != nil {
+		t.Fatal("Failed to get exact on value from the list")
+	}
+
+	if len(values) != 1 {
+		t.Errorf("Expected %d but actual %d", len(values), 0)
+	}
+
+
 	// Act
 	values, err = cache.LRange(key, from, 70)
 

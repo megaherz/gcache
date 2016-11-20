@@ -11,10 +11,8 @@ Redis-similar Cache with REST protocol in Golang
 * Go client library
 
 ##Example of usage
+####Keys
 ```go
-
-    // --- KEYS ---  
-
     // Create new cache
 	cache := gcache.NewCache()
 
@@ -23,7 +21,10 @@ Redis-similar Cache with REST protocol in Golang
 
 	// Get value from the cache
 	value, err := cache.Get("key")
-
+	
+	// Get ttl
+    ttl, err := cache.Ttl("key")
+    
 	// Delete key from the cache
 	err := cache.Del("key")
 
@@ -38,33 +39,33 @@ Redis-similar Cache with REST protocol in Golang
 	
 	// Get number of items in the cache
 	count := cache.Count()
-	
-	
-	// --- LISTS ---
-	
+```
+####Lists	
+```go	
+    // Create new cache
+	cache := gcache.NewCache()
 	// Left push
-	cache.LPush("listKey", "value")
+	cache.LPush("key", "value")
 	
     // Right push                       
-	cache.RPush("listKey", "value")    
+	cache.RPush("key", "value")    
 	
 	// Left pop
-	value, err := cache.LPop("listKey")
+	value, err := cache.LPop("key")
 	
     // Right pop                           
-    value, err := cache.RPop("listKey")   
+    value, err := cache.RPop("key")   
     
     // Range
-    values, err := cache.LRange("listKey", 2, 10)
-    
-    	
-	// -- HASHES -- 
-	
+    values, err := cache.LRange("key", 2, 10)    
+```  	
+####Hashes
+```go	
 	// Add/Update hash valuy
-	cache.HSet("hashKey", "key", "some hash value")  
+	cache.HSet("key", "hashKey", "some hash value")  
 	
 	// Get hash value
-	value, err := cache.HGet("hashKey", "key") 
+	value, err := cache.HGet("key", "hashKey") 
 	
 ```
 
@@ -78,7 +79,6 @@ The server might be run with or without authentication
  // Password should be passed into the NewServerWithAuth function
  server := server.NewServerWithAuth("pass")
 ```
-
 
 ##Notes
 * Keys, List and Hashed share the same keys space. Therefore it's forbidden to create the same key for e.g. Keys and Lists 

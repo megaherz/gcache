@@ -44,6 +44,7 @@ Redis-similar Cache with REST protocol in Golang
 ```go	
     // Create new cache
 	cache := gcache.NewCache()
+	
 	// Left push
 	cache.LPush("key", "value")
 	
@@ -61,6 +62,9 @@ Redis-similar Cache with REST protocol in Golang
 ```  	
 ####Hashes
 ```go	
+    // Create new cache
+	cache := gcache.NewCache()
+
 	// Add/Update hash valuy
 	cache.HSet("key", "hashKey", "some hash value")  
 	
@@ -87,6 +91,8 @@ The server might be run with or without authentication
 The script runs two cache servers on ports 8080 and 8081. The 8081 server is run with authentication psw=123
 
 ##Protocol
+The server exposes a REST protocol. Authentication is optional and is implemented as Authorization header with password as a value.
+If the authentication is failed a standard 401 status is returned in response.
 
 ### Get key
 Http method: GET <br/>

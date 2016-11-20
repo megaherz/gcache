@@ -1,7 +1,6 @@
 package gcache
 
 import (
-	"log"
 	"strconv"
 	"testing"
 	"time"
@@ -23,8 +22,8 @@ func TestCache_Keys(t *testing.T) {
 
 func TestCache_Get(t *testing.T) {
 
-	value := 24
-	key := "key1"
+	const value = 24
+	const key = "key1"
 
 	cache := NewCache()
 	cache.Set(key, value, 5*time.Second)
@@ -40,7 +39,7 @@ func TestCache_Get(t *testing.T) {
 }
 
 func TestCache_Del(t *testing.T) {
-	key := "key1"
+	const key = "key1"
 
 	cache := NewCache()
 	cache.Set(key, "value", time.Second)
@@ -60,8 +59,8 @@ func TestCache_Del(t *testing.T) {
 
 func TestCache_Update(t *testing.T) {
 
-	key := "key1"
-	expectedValue := "expected"
+	const key = "key1"
+	const expectedValue = "expected"
 
 	cache := NewCache()
 	cache.Set(key, "value", 10*time.Microsecond)
@@ -80,9 +79,10 @@ func TestCache_Update(t *testing.T) {
 }
 
 func TestCache_UpdateWithTll(t *testing.T) {
-	key := "key1"
-	expectedTtl := time.Second * 5
-	expectedValue := "expected"
+
+	const key = "key1"
+	const expectedTtl = time.Second * 5
+	const expectedValue = "expected"
 
 	cache := NewCache()
 	cache.Set(key, "value", 10*time.Microsecond)
@@ -109,7 +109,7 @@ func TestCache_UpdateWithTll(t *testing.T) {
 
 func TestCache_Expiration(t *testing.T) {
 
-	key := "key1"
+	const key = "key1"
 
 	cache := NewCache()
 	cache.Set(key, "value", 10*time.Microsecond)
@@ -125,9 +125,12 @@ func TestCache_Expiration(t *testing.T) {
 }
 
 func TestCache_ParallelGetUpdate(t *testing.T) {
+
+	const key = "key1"
+
 	cache := NewCache()
 
-	cache.Set("key", 0, time.Second*10)
+	cache.Set(key, 0, time.Second*10)
 
 	done := make(chan bool)
 
@@ -144,7 +147,7 @@ func TestCache_ParallelGetUpdate(t *testing.T) {
 	// Set
 	go func() {
 		for i := 0; i < 100; i++ {
-			cache.Update("key", i*100)
+			cache.Update(key, i*100)
 		}
 
 		done <- true
@@ -229,18 +232,35 @@ func TestCache_LRange(t *testing.T) {
 	cache := NewCache()
 
 	const key = "list"
+	const from  = 50
 
 	for i := 0; i < 100; i++ {
 		cache.LPush(key, i)
 	}
 
-	values, err := cache.LRange(key, 50, 70)
+	// Act 'to' less 'from'
+	values, err := cache.LRange(key, 50, 40)
 
 	if err != nil {
 		t.Fatal("Failed to get a range of values from the list")
 	}
 
-	log.Println(values)
+	if len(values) != 0 {
+		t.Errorf("Expected %d but actual %d", len(values), 0)
+	}
+
+	// Act
+	values, err = cache.LRange(key, from, 70)
+
+	if err != nil {
+		t.Fatal("Failed to get a range of values from the list")
+	}
+
+	for i, value := range values {
+		if (i + from) != value {
+			t.Errorf("Expected %d but received %d", i, value)
+		}
+	}
 }
 
 func TestCache_HSet_HGet(t *testing.T) {

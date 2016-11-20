@@ -16,8 +16,9 @@ const MaxDuration time.Duration = 1<<63 - 1
 var ErrKeyNotFound = errors.New("Key not found")
 var ErrHashKeyNotFound = errors.New("Hash key not found")
 
+// Internal cache item
 type item struct {
-	key      string
+	key      string         //needed in eviction
 	value    interface{}
 	ttl      time.Duration
 	expireAt time.Time
@@ -205,7 +206,7 @@ func (c *Cache) Del(key string) (err error) {
 // Return all keys in the cache
 func (c *Cache) Keys() []string {
 
-	c.mutex.Lock()
+	c.mutex.RLock()
 	c.evict()
 	keys := make([]string, len(c.items))
 	i := 0
@@ -214,11 +215,10 @@ func (c *Cache) Keys() []string {
 		i++
 	}
 
-	c.mutex.Unlock()
+	c.mutex.RUnlock()
 	return keys
 }
 
-// ====== LIST ======
 
 // Left push value into the list
 func (c *Cache) LPush(key string, value interface{}) error {
@@ -332,8 +332,6 @@ func (c *Cache) LRange(key string, from int, to int) ([]interface{}, error) {
 	}
 
 }
-
-// ====== HASH ======
 
 // Set a new value into a hash
 func (c *Cache) HSet(key string, hashKey string, value interface{}) error {

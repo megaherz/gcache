@@ -22,7 +22,7 @@ func (c Connections) getShard(key string) Connection {
 	return c[n]
 }
 
-func (conn *Connection) doRequest(method, urlStr string, body io.Reader) (*http.Response, error) {
+func (conn Connection) doRequest(method, urlStr string, body io.Reader) (*http.Response, error) {
 
 	req, err := http.NewRequest(method, conn.addr + urlStr, body)
 	if err != nil {
@@ -57,6 +57,7 @@ func (conns Connections) doParallelGetRequest(query string) []*httpResponse {
 		}(query, conn)
 	}
 
+	// Wait to get all the responses
 	for {
 		select {
 		case r := <-ch:

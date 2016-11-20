@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// NOTE, before running the test execute the server.sh script in the run folder.
+// NOTE, before running the test execute the server.sh script in the ./cmd/gcache folder.
 // The scripts runs two cache servers on ports 8080 and 8081
 // The 8081 server is run with authentication psw=123
 

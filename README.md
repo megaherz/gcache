@@ -87,7 +87,7 @@ The server might be run with or without authentication
 ##Notes
 * Keys, List and Hashed share the same keys space. Therefore it's forbidden to create the same key for e.g. Keys and Lists 
 * Arrays for LRANGE and KEYS are returned as csv (encoding/csv package). Json is not used to make the protocol simple
-* Before running the client_test.go execute the server.sh script in the run folder. 
+* Before running the client_test.go execute the server.sh script in the ./cmd/gcache folder. 
 The script runs two cache servers on ports 8080 and 8081. The 8081 server is run with authentication psw=123
 
 ##Protocol

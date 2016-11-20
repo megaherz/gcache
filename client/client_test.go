@@ -45,7 +45,7 @@ func TestClient_SetGetDel_WithAuth(t *testing.T) {
 
 func TestClient_Keys_Sharded(t *testing.T) {
 
-	const n  = 10
+	const n = 10
 
 	// Two shards
 	conns := Connections{
@@ -74,12 +74,30 @@ func TestClient_Keys_Sharded(t *testing.T) {
 		t.Errorf("There should be %d keys, but there are %d keys", n, len(keys))
 	}
 
+	// Make sure keys are distributed between shards
+	client1 := NewClient(Connections{
+		{connectionString, ""},
+	})
+
+	client2 := NewClient(Connections{
+		{connectionStringAuth, psw},
+	})
+
+
+	keys1, _ := client1.Keys()
+	keys2, _ := client2.Keys()
+
+
+	if len(keys1) == 0 || len(keys2) == 0 {
+		t.Error("Keys are not distributed")
+	}
+
 	//Tear down
 	for i := 0; i < n; i++ {
 		client.Del(strconv.Itoa(i))
 	}
-
 }
+
 
 func test_SetGetDel(client *Client, key string, value string, t *testing.T) {
 

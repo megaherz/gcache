@@ -1,7 +1,7 @@
 # Gcache
 Redis-similar Cache with REST protocol in Golang
 
-##Features
+## Features
 * Expiration support (Ttl - time to live)
 * Pure Go implementation
 * Thread safe
@@ -10,8 +10,8 @@ Redis-similar Cache with REST protocol in Golang
 * Client scalability (multiple servers share the key space) 
 * Go client library
 
-##Example of usage
-####Keys
+## Example of usage
+#### Keys
 ```go
     // Create new cache
 	cache := gcache.NewCache()
@@ -40,7 +40,7 @@ Redis-similar Cache with REST protocol in Golang
 	// Get number of items in the cache
 	count := cache.Count()
 ```
-####Lists	
+#### Lists	
 ```go	
     // Create new cache
 	cache := gcache.NewCache()
@@ -60,7 +60,7 @@ Redis-similar Cache with REST protocol in Golang
     // Range
     values, err := cache.LRange("key", 2, 10)    
 ```  	
-####Hashes
+#### Hashes
 ```go	
     // Create new cache
 	cache := gcache.NewCache()
@@ -73,7 +73,7 @@ Redis-similar Cache with REST protocol in Golang
 	
 ```
 
-##Server
+## Server
 The server might be run with or without authentication
 ```go
  // Run the server without authentication
@@ -84,13 +84,13 @@ The server might be run with or without authentication
  server := server.NewServerWithAuth("pass")
 ```
 
-##Notes
+## Notes
 * Keys, List and Hashed share the same keys space. Therefore it's forbidden to create the same key for e.g. Keys and Lists 
 * Arrays for LRANGE and KEYS are returned as csv (encoding/csv package). Json is not used to make the protocol simple
 * Before running the client_test.go execute the server.sh script in the ./cmd/gcache folder. 
 The script runs two cache servers on ports 8080 and 8081. The 8081 server is run with authentication psw=123
 
-##Protocol
+## Protocol
 The server exposes a REST protocol. Authentication is optional and is implemented as Authorization header with password as a value.
 If the authentication is failed a standard 401 status is returned in response.
 
@@ -295,7 +295,7 @@ Url: /hashes/key={key}&hashKey={hasKey}&value={value} <br/>
 |      401     |  Auth failed   |                      |    
 |      500     |  Server error  |                      |   
 
-##Performance
+## Performance
 ```go
 func BenchmarkCache_SetGet(b *testing.B) {
 
@@ -318,7 +318,7 @@ func BenchmarkCache_SetGet(b *testing.B) {
 Result: <br />
 BenchmarkCache_SetGet-4   |   1000000   |     2032 ns/op
 
-##TODO
+## TODO
 * Multiple set and get support on hashes
 * Optimize number of locks since as for now when a new key is inserted the whole cache is blocked
 * Return in response a reason what exactly is not valid on BadRequest(400) 
